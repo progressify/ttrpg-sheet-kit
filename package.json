@@ -1,6 +1,6 @@
 {
   "name": "ttrpg-sheet-kit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Interactive counters, checkbox tracks and multi-column layouts for tabletop RPG character sheets in Obsidian.",
   "main": "main.js",
   "private": true,

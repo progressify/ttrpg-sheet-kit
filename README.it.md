@@ -224,7 +224,7 @@ Mi farebbe piacere sapere come usi TTRPG Sheet Kit al tuo tavolo.
 
 ## Sviluppo
 
-Il plugin è JavaScript semplice, senza passaggio di build.
+Il plugin è JavaScript semplice, senza passaggio di build. Vedi [CONTRIBUTING.md](CONTRIBUTING.md) (in inglese) per configurazione, convenzioni e pull request.
 
 ```bash
 npm test

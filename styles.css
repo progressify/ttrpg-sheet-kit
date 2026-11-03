@@ -184,7 +184,8 @@
 
 /* Embedded notes (![[note]]) are normally a single scrollable box that
    can't be split across columns. Here we "open" them so their content
-   flows as if it were written directly in the callout. */
+   flows as if it were written directly in the callout. The selectors are
+   more specific than Obsidian's own, so no !important is needed here. */
 .callout[data-callout="ttrpgsk-columns"] > .callout-content > p:has(.internal-embed),
 .callout[data-callout="ttrpgsk-columns"] > .callout-content .internal-embed,
 .callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content,
@@ -193,13 +194,15 @@
 .callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content .markdown-preview-sizer > div {
   display: block;
   break-inside: auto;
-  overflow: visible !important;
-  max-height: none !important;
-  min-height: 0 !important;
-  height: auto !important;
+  overflow: visible;
+  max-height: none;
+  height: auto;
 }
 
-.callout[data-callout="ttrpgsk-columns"] .markdown-embed-content .markdown-preview-sizer {
+/* Obsidian sets min-height and padding-bottom on the embed's sizer as inline
+   styles while rendering: only !important can override inline styles. */
+.callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content .markdown-preview-sizer {
+  min-height: 0 !important;
   padding-bottom: 0 !important;
 }
 
@@ -207,10 +210,13 @@
    in the same column as what follows them. Obsidian wraps each block of an
    embedded note in a div (.el-h3, .el-p, ...), so both shapes are covered. */
 .callout[data-callout="ttrpgsk-columns"] .callout-content :is(h1, h2, h3, h4, h5, h6),
-.callout[data-callout="ttrpgsk-columns"] .callout-content :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6),
-.callout[data-callout="ttrpgsk-columns"] .callout-content p:has(+ :is(ul, ol)),
-.callout[data-callout="ttrpgsk-columns"] .callout-content .el-p:has(+ :is(.el-ul, .el-ol)) {
+.callout[data-callout="ttrpgsk-columns"] .callout-content :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6) {
   break-after: avoid;
+}
+
+.callout[data-callout="ttrpgsk-columns"] .callout-content p + :is(ul, ol),
+.callout[data-callout="ttrpgsk-columns"] .callout-content .el-p + :is(.el-ul, .el-ol) {
+  break-before: avoid;
 }
 
 .callout[data-callout="ttrpgsk-columns"] > .callout-content > :first-child {

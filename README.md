@@ -225,7 +225,7 @@ I'd love to hear how you use TTRPG Sheet Kit at your table.
 
 ## Development
 
-The plugin is plain JavaScript with no build step.
+The plugin is plain JavaScript with no build step. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and pull requests.
 
 ```bash
 npm test
