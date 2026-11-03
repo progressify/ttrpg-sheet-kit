@@ -5,6 +5,7 @@
   "main": "main.js",
   "private": true,
   "scripts": {
+    "build": "node --check main.js",
     "test": "node --test tests/*.test.js"
   },
   "author": "Progressify",
