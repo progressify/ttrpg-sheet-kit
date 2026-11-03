@@ -1,0 +1,161 @@
+# TTRPG Sheet Kit — reference for LLMs
+
+Obsidian plugin. Use it to write tabletop RPG character sheets in Markdown with clickable counters,
+checkbox tracks and multi-column layouts. Any game system. Output plain Markdown; the plugin renders it.
+
+Two syntaxes only:
+1. ```` ```ttrpgsk-counters ```` fenced block, YAML inside → counters / tracks.
+2. `> [!ttrpgsk-columns]` callout → content laid out in columns.
+
+Everything else is normal Obsidian Markdown (headings, lists, tables, `[[links]]`, `![[embeds]]`).
+
+## 1. Counter block
+
+````
+```ttrpgsk-counters
+key: <value>
+```
+````
+
+### Counter value forms
+| Form | Example | Result |
+|---|---|---|
+| integer | `gold: 47` | counter, −/+ buttons |
+| value/max string | `hp: 37/44` | counter with maximum, shown `37/44` |
+| flow map | `hp: { label: Hit points, value: 37, max: 44 }` | counter with options |
+| block map | `hp:`<br>`  label: Hit points`<br>`  value: 37` | same as flow map |
+
+### Counter fields (map forms)
+| Field | Type | Default | Notes |
+|---|---|---|---|
+| `label` (alias `name`) | string | the key | display name |
+| `value` | integer or `"a/b"` | 0 | `"a/b"` sets value a and max b |
+| `max` | integer | none | clicks clamp to it |
+| `min` | integer or `null` | 0 | **default 0: negative values need `min: null`** |
+| `step` | integer | 1 | Shift+click = step × 5 |
+| `type` | `number` \| `track` | `number` | `track` = row of `max` checkboxes, `value` = filled boxes; needs `max` |
+| `mod` | boolean | false | shows D&D modifier `floor((v-10)/2)`, e.g. 14 → (+2) |
+
+### Block options (top-level keys)
+| Key | Values |
+|---|---|
+| `label` (alias `name`) | block title |
+| `layout` | `vertical` (default: one row per counter) \| `horizontal` (side by side, label on top, wraps) |
+| `mod` | `true` → modifier on every counter |
+
+`label`, `name`, `layout`, `mod` are **reserved**: never use them as counter keys.
+
+### Groups (several titled groups in one block)
+A top-level key whose value is a map containing `items:` is a group. Group options: `label`, `layout`, `mod`.
+Block-level `layout`/`mod` are inherited by groups.
+
+```yaml
+coins:
+  label: Coins
+  layout: horizontal
+  items:
+    gp: { label: Gold, value: 47 }
+    sp: { label: Silver, value: 15 }
+ammo:
+  label: Ammunition
+  items:
+    arrows: { label: Arrows, value: 18, max: 40 }
+```
+
+If a block contains at least one group, top-level counters outside groups are **ignored**. Don't mix.
+
+## 2. Columns callout
+
+```
+> [!ttrpgsk-columns] Optional title
+> - item
+> - item
+```
+
+- `|3` → three columns, `|plain` → no border/title, combine: `> [!ttrpgsk-columns|3 plain]`. Default: 2 columns, bordered.
+- Content: any Markdown. Lists split across columns, list items never break.
+- Counter blocks inside the callout: prefix **every** line with `> `, including the fences. Several blocks in one callout are distributed across the columns; a block never splits.
+- An embedded note is split across columns: `> ![[Note name]]`.
+- Single column on phones.
+
+## 3. Rules that avoid broken output
+
+1. Values are **integers only**. No decimals, no units in `value` (put units in `label`: `Rations (days)`).
+2. Keys: unique within their block/group, no spaces (use `snake_case`), not reserved.
+3. Quote labels containing `:` `,` `#` `{` `}` `[` `]` or starting with `*` `&` `!` `%` `@`: `label: "STR: Strength"`.
+4. A counter whose value can't be parsed is silently skipped.
+5. Keep `value` on the counter's own line (short/flow form) or on its own `value:` line (block form): the plugin edits that number in place when clicked.
+6. Tracks: always set `max`; `value` ≤ `max`. Use for death saves, stress, spell slots, daily uses, inspiration.
+7. Use counters only for values that change during play (HP, slots, coins, ammo, XP). Static numbers (AC, speed, skill bonuses) stay as plain text.
+8. YAML comments (`# ...`) are allowed and preserved.
+9. Never put a counter block inside a table or a list item.
+
+## 4. Recommended sheet structure
+
+1. `# Name`, one italic line with class/level/background.
+2. Static stats as bold-label lines, optionally in `> [!ttrpgsk-columns|plain]`.
+3. Ability scores: one `horizontal` block, `mod: true` for d20 systems.
+4. Resources (HP, temp HP, hit dice, death saves, inspiration): counters + tracks, several blocks side by side in a plain columns callout.
+5. Spell slots as tracks; spell list as lists, or a separate note embedded in a columns callout.
+6. Features as a list in `[!ttrpgsk-columns|plain]`; limited uses as tracks right after.
+7. Coins as a `horizontal` group; consumables as a vertical group with `max` where useful.
+8. Inventory list in `[!ttrpgsk-columns|3 plain]`.
+9. Progress (XP with `step: 100`, reputation with `min: null` if it can go negative).
+
+## 5. Minimal complete example
+
+````markdown
+# Brakka Ironfist
+*Dwarf Fighter 3 · Soldier*
+
+> [!ttrpgsk-columns|plain]
+> **Armor Class** 18 · **Speed** 25 ft.
+>
+> **Proficiency bonus** +2 · **Passive Perception** 11
+
+```ttrpgsk-counters
+layout: horizontal
+mod: true
+STR: 16
+DEX: 10
+CON: 16
+INT: 8
+WIS: 12
+CHA: 10
+```
+
+> [!ttrpgsk-columns|plain]
+> ```ttrpgsk-counters
+> label: Hit points
+> hp: { label: Current, value: 31, max: 31 }
+> temp_hp: { label: Temporary, value: 0 }
+> hit_dice: { label: Hit dice (d10), value: 3/3 }
+> ```
+> ```ttrpgsk-counters
+> label: Resources
+> second_wind: { label: Second Wind, type: track, max: 1, value: 0 }
+> action_surge: { label: Action Surge, type: track, max: 1, value: 0 }
+> death_fail: { label: Death save failures, type: track, max: 3, value: 0 }
+> ```
+
+```ttrpgsk-counters
+coins:
+  label: Coins
+  layout: horizontal
+  items:
+    gp: { label: Gold, value: 25 }
+    sp: { label: Silver, value: 8 }
+gear:
+  label: Consumables
+  items:
+    bolts: { label: Crossbow bolts, value: 20, max: 20 }
+    potions: { label: Potions of healing, value: 1 }
+```
+
+> [!ttrpgsk-columns|3 plain]
+> - Battleaxe
+> - Shield
+> - Chain mail
+> - Light crossbow
+> - Explorer's pack
+````

@@ -1,0 +1,257 @@
+/* ---------------------------------------------------------------------------
+   ```ttrpgsk-counters blocks
+   --------------------------------------------------------------------------- */
+
+.tsk-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+  break-inside: avoid;
+}
+
+.tsk-group-title {
+  font-weight: var(--font-semibold);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.35em;
+}
+
+.tsk-label {
+  user-select: none;
+}
+
+.tsk-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+}
+
+.tsk-value {
+  min-width: 2.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.tsk-number {
+  font-weight: var(--font-semibold);
+}
+
+.tsk-max,
+.tsk-mod {
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+
+.tsk-mod {
+  margin-left: 0.25em;
+}
+
+.tsk-counters button.tsk-btn {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 1.8em;
+  height: 1.8em;
+  padding: 0;
+  line-height: 1;
+  font-size: 1em;
+  cursor: pointer;
+}
+
+/* Checkbox tracks (stress, slots, ...) */
+.tsk-track {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3em;
+}
+
+.tsk-counters button.tsk-box {
+  width: 1.4em;
+  height: 1.4em;
+  padding: 0;
+  border: 2px solid var(--interactive-accent);
+  border-radius: 3px;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.tsk-counters button.tsk-box.is-filled {
+  background: var(--interactive-accent);
+}
+
+/* Vertical layout: one row per counter */
+.tsk-layout-vertical .tsk-items {
+  display: flex;
+  flex-direction: column;
+}
+
+.tsk-layout-vertical .tsk-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  padding: 0.25em 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tsk-layout-vertical .tsk-item:last-child {
+  border-bottom: none;
+}
+
+/* Horizontal layout: side-by-side columns, label on top.
+   Columns never shrink below --tsk-item-min: when they don't fit,
+   they wrap instead of squashing the buttons. */
+.tsk-layout-horizontal {
+  --tsk-item-min: 7.5em;
+}
+
+.tsk-layout-horizontal.tsk-has-mod {
+  --tsk-item-min: 9.5em;
+}
+
+.tsk-layout-horizontal .tsk-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--tsk-item-min), 1fr));
+  gap: 0.5em;
+}
+
+.tsk-layout-horizontal .tsk-item {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.4em 0.2em;
+}
+
+.tsk-layout-horizontal .tsk-label {
+  text-align: center;
+  font-weight: var(--font-bold);
+  color: var(--text-accent);
+  text-transform: uppercase;
+  font-size: 0.85em;
+  letter-spacing: 0.05em;
+}
+
+/* Live Preview: leave room on the right for the "Edit block" button (</>),
+   shown on hover, so it doesn't cover boxes and buttons */
+.cm-embed-block > .block-language-ttrpgsk-counters {
+  padding-right: 2.2em;
+}
+
+.tsk-suggest-desc {
+  color: var(--text-muted);
+}
+
+.tsk-error {
+  color: var(--text-error);
+}
+
+/* Bigger buttons on phones */
+.is-phone .tsk-counters button.tsk-btn {
+  width: 2.2em;
+  height: 2.2em;
+}
+
+/* ---------------------------------------------------------------------------
+   Columns callout:  > [!ttrpgsk-columns] Title
+                     > [!ttrpgsk-columns|3]       three columns
+                     > [!ttrpgsk-columns|plain]   no border and title
+   --------------------------------------------------------------------------- */
+
+.callout[data-callout="ttrpgsk-columns"] {
+  --callout-color: var(--color-base-50-rgb, 128, 128, 128);
+  --callout-icon: lucide-columns-2;
+}
+
+.callout[data-callout="ttrpgsk-columns"] > .callout-content {
+  column-count: 2;
+  column-gap: 2em;
+}
+
+.callout[data-callout="ttrpgsk-columns"][data-callout-metadata~="3"] > .callout-content {
+  column-count: 3;
+}
+
+/* Lists may break across columns, single items may not */
+.callout[data-callout="ttrpgsk-columns"] > .callout-content > :not(ul, ol),
+.callout[data-callout="ttrpgsk-columns"] > .callout-content li {
+  break-inside: avoid;
+}
+
+/* Embedded notes (![[note]]) are normally a single scrollable box that
+   can't be split across columns. Here we "open" them so their content
+   flows as if it were written directly in the callout. */
+.callout[data-callout="ttrpgsk-columns"] > .callout-content > p:has(.internal-embed),
+.callout[data-callout="ttrpgsk-columns"] > .callout-content .internal-embed,
+.callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content,
+.callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content .markdown-preview-view,
+.callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content .markdown-preview-sizer,
+.callout[data-callout="ttrpgsk-columns"] > .callout-content .markdown-embed-content .markdown-preview-sizer > div {
+  display: block;
+  break-inside: auto;
+  overflow: visible !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+.callout[data-callout="ttrpgsk-columns"] .markdown-embed-content .markdown-preview-sizer {
+  padding-bottom: 0 !important;
+}
+
+/* Keep headings, and short lines that introduce a list (e.g. "**2nd level**"),
+   in the same column as what follows them. Obsidian wraps each block of an
+   embedded note in a div (.el-h3, .el-p, ...), so both shapes are covered. */
+.callout[data-callout="ttrpgsk-columns"] .callout-content :is(h1, h2, h3, h4, h5, h6),
+.callout[data-callout="ttrpgsk-columns"] .callout-content :is(.el-h1, .el-h2, .el-h3, .el-h4, .el-h5, .el-h6),
+.callout[data-callout="ttrpgsk-columns"] .callout-content p:has(+ :is(ul, ol)),
+.callout[data-callout="ttrpgsk-columns"] .callout-content .el-p:has(+ :is(.el-ul, .el-ol)) {
+  break-after: avoid;
+}
+
+.callout[data-callout="ttrpgsk-columns"] > .callout-content > :first-child {
+  margin-top: 0;
+}
+
+.callout[data-callout="ttrpgsk-columns"][data-callout-metadata~="plain"] {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.callout[data-callout="ttrpgsk-columns"][data-callout-metadata~="plain"] > .callout-title {
+  display: none;
+}
+
+/* Obsidian draws list bullets as floated elements, which the browser loses
+   when a list is split across columns. Use native markers instead. */
+.callout[data-callout="ttrpgsk-columns"] .markdown-rendered ul.has-list-bullet,
+.callout[data-callout="ttrpgsk-columns"] ul.has-list-bullet {
+  list-style-type: disc;
+}
+
+.callout[data-callout="ttrpgsk-columns"] ul.has-list-bullet ul.has-list-bullet {
+  list-style-type: circle;
+}
+
+.callout[data-callout="ttrpgsk-columns"] ul.has-list-bullet > li::marker {
+  color: var(--list-marker-color);
+}
+
+.callout[data-callout="ttrpgsk-columns"] ul.has-list-bullet > li > .list-bullet {
+  display: none;
+}
+
+/* Live Preview: room for the callout's "Edit block" button (</>) */
+.cm-embed-block > .callout[data-callout="ttrpgsk-columns"] {
+  padding-right: 2.2em;
+}
+
+/* A single column on phones */
+.is-phone .callout[data-callout="ttrpgsk-columns"] > .callout-content {
+  column-count: 1;
+}

@@ -1,0 +1,11 @@
+name: Feedback
+description: Share what you like or dislike about the current features
+labels: [feedback]
+body:
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Your feedback
+      description: How do you use the plugin? What works well, what feels awkward?
+    validations:
+      required: true

@@ -1,0 +1,31 @@
+name: Bug report
+description: Something doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: block
+    attributes:
+      label: The block that misbehaves
+      description: Paste the ttrpgsk-counters block or the callout.
+      render: markdown
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Plugin version, Obsidian version, theme, desktop or mobile.
+      placeholder: "0.1.0, Obsidian 1.14.4, Minimal, macOS"
+  - type: dropdown
+    id: view
+    attributes:
+      label: View mode
+      options:
+        - Live Preview
+        - Reading view
+        - Both

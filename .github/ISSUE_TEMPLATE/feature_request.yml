@@ -1,0 +1,17 @@
+name: Feature request
+description: Suggest a new feature or an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to do?
+      description: Describe what you want to track or lay out on your sheet, and for which game system.
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: How would you write it?
+      description: Optional. A sketch of the block or Markdown you would like to use.
+      render: markdown
