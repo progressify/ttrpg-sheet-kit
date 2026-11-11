@@ -35,6 +35,15 @@ key: <value>
 | `step` | integer | 1 | Shift+click = step × 5 |
 | `type` | `number` \| `track` | `number` | `track` = row of `max` checkboxes, `value` = filled boxes; needs `max` |
 | `mod` | boolean | false | shows D&D modifier `floor((v-10)/2)`, e.g. 14 → (+2) |
+| `reset` | `{ on: <moment>, to: max \| min \| <integer> }` | none | **both `on` and `to` required**; see Resets |
+
+### Resets
+`reset: { on: long, to: max }` — the plugin's "Reset…" command sets the counter to `to` for the chosen moment `on`.
+- `on`: free name (`short`, `long`, `session`, `day`…). `long` also triggers `short`.
+- `to`: `max` (needs `max`), `min` (needs a non-null `min`), or an integer.
+- Typical: HP `{ on: long, to: max }`; spell slots / daily uses as tracks `{ on: long, to: min }`;
+  short-rest features `{ on: short, to: min }`; Fate points `{ on: session, to: <refresh> }`.
+- Never write `reset: long` alone: it is invalid.
 
 ### Block options (top-level keys)
 | Key | Values |
@@ -86,9 +95,10 @@ If a block contains at least one group, top-level counters outside groups are **
 4. A counter whose value can't be parsed is silently skipped.
 5. Keep `value` on the counter's own line (short/flow form) or on its own `value:` line (block form): the plugin edits that number in place when clicked.
 6. Tracks: always set `max`; `value` ≤ `max`. Use for death saves, stress, spell slots, daily uses, inspiration.
-7. Use counters only for values that change during play (HP, slots, coins, ammo, XP). Static numbers (AC, speed, skill bonuses) stay as plain text.
-8. YAML comments (`# ...`) are allowed and preserved.
-9. Never put a counter block inside a table or a list item.
+7. Add `reset` to resources that refill (HP, slots, limited uses); leave it out for coins, ammo, XP.
+8. Use counters only for values that change during play (HP, slots, coins, ammo, XP). Static numbers (AC, speed, skill bonuses) stay as plain text.
+9. YAML comments (`# ...`) are allowed and preserved.
+10. Never put a counter block inside a table or a list item.
 
 ## 4. Recommended sheet structure
 
@@ -127,14 +137,14 @@ CHA: 10
 > [!ttrpgsk-columns|plain]
 > ```ttrpgsk-counters
 > label: Hit points
-> hp: { label: Current, value: 31, max: 31 }
+> hp: { label: Current, value: 31, max: 31, reset: { on: long, to: max } }
 > temp_hp: { label: Temporary, value: 0 }
 > hit_dice: { label: Hit dice (d10), value: 3/3 }
 > ```
 > ```ttrpgsk-counters
 > label: Resources
-> second_wind: { label: Second Wind, type: track, max: 1, value: 0 }
-> action_surge: { label: Action Surge, type: track, max: 1, value: 0 }
+> second_wind: { label: Second Wind, type: track, max: 1, value: 0, reset: { on: short, to: min } }
+> action_surge: { label: Action Surge, type: track, max: 1, value: 0, reset: { on: short, to: min } }
 > death_fail: { label: Death save failures, type: track, max: 3, value: 0 }
 > ```
 

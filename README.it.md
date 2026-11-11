@@ -26,6 +26,9 @@ Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il t
 - **Callout a colonne** per mettere elenchi e testo (anche note incorporate) su due o tre colonne.
 - **Comandi di inserimento**: scegli un blocco pronto dalla palette dei comandi o dal clic destro, senza ricordare la sintassi.
 - Funziona in **modalità Lettura e Live Preview**, su desktop e mobile.
+- **Scrivi un valore** direttamente: `25`, `+8` (cura), `-17` (danno).
+- **Reset** per riposi, sessioni o giorni: un comando riporta tutti i contatori al punto di partenza.
+- **Annulla** l'ultima modifica, anche un intero reset.
 - Cambia solo il numero modificato: formattazione e commenti dello YAML restano intatti.
 - Interfaccia in italiano e inglese (segue la lingua di Obsidian).
 
@@ -83,8 +86,51 @@ stress: { type: track, max: 3, value: 1 }
 | `step`  | di quanto cambia a ogni clic (Shift+clic = × 5)            | 1         |
 | `type`  | `number`, oppure `track` per le caselle (serve `max`)      | `number`  |
 | `mod`   | mostra il modificatore D&D, es. 14 → (+2)                  | `false`   |
+| `reset` | `{ on: <momento>, to: max \| min \| <numero> }`, vedi [Reset](#reset) | nessuno |
 
 In una traccia, cliccare una casella riempie la traccia fino a quella; cliccare l'ultima piena la svuota.
+
+### Scrivere un valore
+
+Clicca il numero di un contatore per scrivere un valore, poi premi **Invio** (**Esc** o un clic fuori annulla):
+
+| Scrivi | Risultato |
+| ------ | --------- |
+| `25`   | il valore diventa 25 |
+| `+8`   | aggiunge 8 (cura) |
+| `-17`  | toglie 17 (danno) |
+| `=-2`  | imposta un valore negativo (serve `min: null`) |
+
+Minimo e massimo sono sempre rispettati. Qualsiasi altra cosa viene rifiutata e il campo diventa rosso.
+
+### Reset
+
+Aggiungi `reset` a un contatore per riportarlo a un punto di partenza alla fine di un riposo, di una sessione, di un giorno…
+
+````markdown
+```ttrpgsk-counters
+pf:     { value: 37, max: 44, reset: { on: long, to: max } }
+slot_1: { type: track, max: 4, value: 3, reset: { on: long, to: min } }
+recupero: { type: track, max: 1, value: 1, reset: { on: short, to: min } }
+fato:   { value: 1, reset: { on: session, to: 3 } }
+```
+````
+
+- `on` è il momento, con il nome che vuoi: `short`, `long`, `session`, `day`…
+  **`long` ripristina anche ciò che si ripristina con `short`.**
+- `to` è il valore a cui tornare: `max`, `min` o un numero. Servono entrambi;
+  se ne manca uno, sotto il contatore compare un avviso.
+- I contatori con reset mostrano un piccolo **↺** accanto al nome (passaci sopra per vedere quando e dove si ripristinano).
+
+Esegui **TTRPG Sheet Kit: Reset…** dalla palette dei comandi e scegli il momento: tutti i contatori della
+nota aperta con quel reset tornano insieme al punto di partenza. Il comando compare solo nelle note che usano
+`reset`. Un avviso elenca cosa è cambiato, con il bottone **Annulla**.
+
+### Annulla
+
+**TTRPG Sheet Kit: Annulla ultima modifica** ripristina l'ultima modifica fatta dal plugin nella nota aperta:
+un clic, un valore scritto o un intero reset. Puoi assegnargli una scorciatoia. Non sovrascrive i valori che
+nel frattempo hai cambiato a mano. La cronologia resta in memoria e si azzera quando chiudi Obsidian.
 
 ### Opzioni del blocco
 

@@ -41,7 +41,8 @@ CHA: 8
 >   value: 37
 >   max: 44             # can't heal past the maximum
 >   step: 1             # Shift+click = 5 at a time
-> temp_hp: { label: Temporary, value: 0 }
+>   reset: { on: long, to: max }   # Reset… → long: back to full
+> temp_hp: { label: Temporary, value: 0, reset: { on: long, to: 0 } }
 > hit_dice: { label: Hit dice (d10), value: 5/5 }
 > exhaustion: { label: Exhaustion, value: 0, max: 6 }
 > ```
@@ -60,8 +61,8 @@ CHA: 8
 
 ```ttrpgsk-counters
 label: Spell slots
-slot_1: { label: 1st level, type: track, max: 4, value: 1 }
-slot_2: { label: 2nd level, type: track, max: 2, value: 0 }
+slot_1: { label: 1st level, type: track, max: 4, value: 1, reset: { on: long, to: min } }
+slot_2: { label: 2nd level, type: track, max: 2, value: 0, reset: { on: long, to: min } }
 ```
 
 <!-- An embedded note, split across two columns. -->
@@ -79,8 +80,8 @@ slot_2: { label: 2nd level, type: track, max: 2, value: 0 }
 
 ```ttrpgsk-counters
 label: Uses until long rest
-favored_foe: { label: Favored Foe, type: track, max: 3, value: 1 }
-wanderer_charm: { label: Wanderer's Charm (homebrew), type: track, max: 1, value: 0 }
+favored_foe: { label: Favored Foe, type: track, max: 3, value: 1, reset: { on: long, to: min } }
+wanderer_charm: { label: Wanderer's Charm (homebrew), type: track, max: 1, value: 0, reset: { on: short, to: min } }
 ```
 
 ## Equipment

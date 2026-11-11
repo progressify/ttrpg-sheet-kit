@@ -26,6 +26,9 @@ It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own ho
 - **Columns callout** to put lists and text (even embedded notes) in two or three columns.
 - **Insert commands**: pick a ready-made block from the command palette or the right-click menu, no syntax to remember.
 - Works in **Reading view and Live Preview**, on desktop and mobile.
+- **Type a value** directly: `25`, `+8` (healing), `-17` (damage).
+- **Resets** for rests, sessions or days: one command brings every counter back to its starting point.
+- **Undo** the last change, a whole reset included.
 - Changes only the number that changed: your formatting and YAML comments are kept.
 - Interface in English and Italian (follows Obsidian's language).
 
@@ -84,8 +87,51 @@ stress: { type: track, max: 3, value: 1 }
 | `step`  | change per click (Shift+click = × 5)                     | 1         |
 | `type`  | `number`, or `track` for checkboxes (requires `max`)     | `number`  |
 | `mod`   | show the D&D modifier, e.g. 14 → (+2)                    | `false`   |
+| `reset` | `{ on: <moment>, to: max \| min \| <number> }`, see [Resets](#resets) | none |
 
 In a track, clicking a box fills the track up to that box; clicking the last filled box empties it.
+
+### Typing a value
+
+Click the number of a counter to type a value, then press **Enter** (**Esc** or clicking away cancels):
+
+| You type | Result |
+| -------- | ------ |
+| `25`     | the value becomes 25 |
+| `+8`     | adds 8 (healing) |
+| `-17`    | subtracts 17 (damage) |
+| `=-2`    | sets a negative value (needs `min: null`) |
+
+Minimum and maximum are always respected. Anything else is refused and the field turns red.
+
+### Resets
+
+Give a counter a `reset` to bring it back to a starting point at the end of a rest, a session, a day…
+
+````markdown
+```ttrpgsk-counters
+hp:     { value: 37, max: 44, reset: { on: long, to: max } }
+slot_1: { type: track, max: 4, value: 3, reset: { on: long, to: min } }
+second_wind: { type: track, max: 1, value: 1, reset: { on: short, to: min } }
+fate:   { value: 1, reset: { on: session, to: 3 } }
+```
+````
+
+- `on` is the moment, any name you like: `short`, `long`, `session`, `day`…
+  **`long` also resets what resets on `short`.**
+- `to` is where the value goes back: `max`, `min` or a number. Both fields are required;
+  if one is missing, a warning appears under the counter.
+- Counters with a reset show a small **↺** next to their name (hover it to see when and where it resets).
+
+Run **TTRPG Sheet Kit: Reset…** from the command palette and pick the moment: every counter of the
+open note with that reset goes back to its starting point at once. The command only appears in notes
+that use `reset`. A notice lists what changed, with an **Undo** button.
+
+### Undo
+
+**TTRPG Sheet Kit: Undo last change** puts back the last change made by the plugin in the open note:
+a click, a typed value or a whole reset. You can assign it a hotkey. It won't overwrite values you
+changed by hand in the meantime. The history lives in memory and is cleared when Obsidian closes.
 
 ### Block options
 

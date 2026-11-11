@@ -35,6 +35,56 @@
   white-space: nowrap;
 }
 
+/* Click the number to type a value */
+.tsk-value.is-editable {
+  cursor: text;
+  border-radius: var(--radius-s);
+  padding: 0 0.2em;
+}
+
+.tsk-value.is-editable:hover {
+  background: var(--background-modifier-hover);
+}
+
+.tsk-value.is-editing > span {
+  display: none;
+}
+
+.tsk-counters input.tsk-input {
+  width: 4em;
+  height: 1.8em;
+  padding: 0 0.3em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.tsk-counters input.tsk-input.is-invalid {
+  border-color: var(--text-error);
+  box-shadow: 0 0 0 1px var(--text-error);
+}
+
+/* ↺ next to the label of counters with a reset */
+.tsk-reset-icon {
+  margin-left: 0.3em;
+  color: var(--text-faint);
+  font-size: 0.85em;
+  cursor: help;
+}
+
+/* Problem in a counter's options, shown under it */
+.tsk-warning {
+  color: var(--text-warning);
+  font-size: var(--font-ui-smaller);
+}
+
+.tsk-layout-vertical .tsk-warning {
+  flex-basis: 100%;
+}
+
+.tsk-layout-horizontal .tsk-warning {
+  text-align: center;
+}
+
 .tsk-number {
   font-weight: var(--font-semibold);
 }
@@ -90,9 +140,10 @@
 
 .tsk-layout-vertical .tsk-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 1em;
+  column-gap: 1em;
   padding: 0.25em 0;
   border-bottom: 1px solid var(--background-modifier-border);
 }
@@ -144,6 +195,17 @@
 
 .tsk-suggest-desc {
   color: var(--text-muted);
+}
+
+/* Notice shown after a reset */
+.tsk-notice-detail {
+  margin-top: 0.25em;
+  font-size: var(--font-ui-smaller);
+  opacity: 0.85;
+}
+
+.notice button.tsk-notice-undo {
+  margin-top: 0.5em;
 }
 
 .tsk-error {

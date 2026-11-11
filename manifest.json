@@ -1,7 +1,7 @@
 {
   "id": "ttrpg-sheet-kit",
   "name": "TTRPG Sheet Kit",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "minAppVersion": "1.4.0",
   "description": "Interactive counters, checkbox tracks and multi-column layouts for tabletop RPG character sheets, saved as plain text in your notes.",
   "author": "Progressify",

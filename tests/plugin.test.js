@@ -4,8 +4,8 @@ const assert = require('node:assert/strict');
 const Module = require('node:module');
 const path = require('node:path');
 
-// Minimal stand-in for the `obsidian` module. parseYaml uses JSON.parse:
-// JSON is valid YAML, which is enough to test the parsing logic.
+// Minimal stand-in for the `obsidian` module, with a small YAML reader
+// in place of Obsidian's parseYaml.
 const originalLoad = Module._load;
 Module._load = function (request, ...args) {
   if (request === 'obsidian') {
@@ -14,7 +14,7 @@ Module._load = function (request, ...args) {
       Notice: class {},
       TFile: class {},
       SuggestModal: class {},
-      parseYaml: (s) => JSON.parse(s),
+      parseYaml: require('./yaml-lite').parseYaml,
       moment: { locale: () => 'en' },
     };
   }
@@ -25,7 +25,13 @@ const {
   parseValue,
   parseBlock,
   updateBlockLines,
+  findBlocks,
   locateBlock,
+  countResets,
+  collectResets,
+  applyReset,
+  applyUndo,
+  parseInput,
   formatMod,
   columnsCallout,
   buildTemplates,
@@ -134,10 +140,10 @@ test('update: groups resolve the right key', () => {
 
 test('locateBlock: plain and inside a callout', () => {
   const file = ['# title', '> [!ttrpgsk-columns]', '> ```ttrpgsk-counters', '> gold: 7', '> ```', '', '```ttrpgsk-counters', 'gold: 7', '```'];
-  assert.deepEqual(locateBlock(file, { lineStart: 6 }, 'gold: 7'), { open: 6, close: 8, prefix: '' });
-  assert.deepEqual(locateBlock(file, { lineStart: 2 }, 'gold: 7'), { open: 2, close: 4, prefix: '> ' });
-  assert.deepEqual(locateBlock(file, null, 'gold: 7'), { open: 2, close: 4, prefix: '> ' });
-  assert.deepEqual(locateBlock(file, { lineStart: 0 }, 'gold: 7'), { open: 2, close: 4, prefix: '> ' });
+  assert.deepEqual(locateBlock(file, { lineStart: 6 }, 'gold: 7'), { open: 6, close: 8, prefix: '', index: 1 });
+  assert.deepEqual(locateBlock(file, { lineStart: 2 }, 'gold: 7'), { open: 2, close: 4, prefix: '> ', index: 0 });
+  assert.deepEqual(locateBlock(file, null, 'gold: 7'), { open: 2, close: 4, prefix: '> ', index: 0 });
+  assert.deepEqual(locateBlock(file, { lineStart: 0 }, 'gold: 7'), { open: 2, close: 4, prefix: '> ', index: 0 });
   assert.equal(locateBlock(file, null, 'gold: 8'), null);
 });
 
@@ -154,4 +160,114 @@ test('templates: same ids and shape in every language', () => {
     assert.ok(tpl.name && tpl.desc, tpl.id);
     if (!tpl.columns) assert.match(tpl.text, /^```ttrpgsk-counters\n[\s\S]+\n```$/);
   }
+});
+
+// ---------------------------------------------------------------------------
+// Direct input, reset, undo
+// ---------------------------------------------------------------------------
+
+test('parseInput: absolute, relative and invalid values', () => {
+  assert.equal(parseInput('25')(10), 25);
+  assert.equal(parseInput(' +5 ')(10), 15);
+  assert.equal(parseInput('-17')(37), 20);
+  assert.equal(parseInput('=-2')(5), -2);
+  assert.equal(parseInput('= 0')(5), 0);
+  assert.equal(parseInput('abc'), null);
+  assert.equal(parseInput(''), null);
+  assert.equal(parseInput('1.5'), null);
+  assert.equal(parseInput('--3'), null);
+});
+
+test('parseBlock: reset needs both on and to', () => {
+  const src = [
+    'hp: { value: 3, max: 9, reset: { on: long, to: max } }',
+    'stress: { value: 2, max: 3, reset: { on: session, to: min } }',
+    'fate: { value: 1, reset: { on: session, to: 3 } }',
+    'a: { value: 1, reset: long }',
+    'b: { value: 1, reset: { on: long } }',
+    'c: { value: 1, reset: { to: max } }',
+    'd: { value: 1, reset: { on: long, to: max } }',
+    'e: { value: 1, min: null, reset: { on: long, to: min } }',
+    'f: { value: 1, reset: { on: long, to: lots } }',
+  ].join('\n');
+  const items = Object.fromEntries(parseBlock(src, t)[0].items.map((i) => [i.key, i]));
+  assert.deepEqual(items.hp.reset, { on: 'long', to: 'max' });
+  assert.deepEqual(items.stress.reset, { on: 'session', to: 'min' });
+  assert.deepEqual(items.fate.reset, { on: 'session', to: 3 });
+  assert.equal(items.a.resetError, 'invalid');
+  assert.equal(items.b.resetError, 'invalid');
+  assert.equal(items.c.resetError, 'invalid');
+  assert.equal(items.d.resetError, 'noMax');
+  assert.equal(items.e.resetError, 'noMin');
+  assert.equal(items.f.resetError, 'invalid');
+  for (const k of ['a', 'b', 'c', 'd', 'e', 'f']) assert.equal(items[k].reset, undefined, k);
+  for (const k of Object.keys(t.resetErrors)) assert.ok(STRINGS.it.resetErrors[k], k);
+});
+
+const sheet = [
+  '# Sheet',
+  '```ttrpgsk-counters',
+  'hp:',
+  '  label: HP',
+  '  value: 20      # current',
+  '  max: 44',
+  '  reset: { on: long, to: max }',
+  'temp: { value: 5, reset: { on: short, to: 0 } }',
+  'broken: { value: 9, reset: long }',
+  '```',
+  '',
+  '> [!ttrpgsk-columns]',
+  '> ```ttrpgsk-counters',
+  '> slots:',
+  '>   items:',
+  '>     s1: { type: track, max: 4, value: 3, reset: { on: long, to: min } }',
+  '>     fate: { value: 1, reset: { on: session, to: 3 } }',
+  '> ```',
+];
+
+test('findBlocks and countResets', () => {
+  assert.deepEqual(
+    findBlocks(sheet).map((b) => [b.open, b.close, b.prefix, b.index]),
+    [
+      [1, 9, '', 0],
+      [12, 17, '> ', 1],
+    ]
+  );
+  const counts = countResets(collectResets(sheet, t));
+  assert.deepEqual(Object.fromEntries(counts), { long: 3, short: 1, session: 1 });
+});
+
+test('applyReset: long rest also resets short, keeps comments and prefixes', () => {
+  const { lines, changes } = applyReset(sheet, 'long', t);
+  assert.equal(lines[4], '  value: 44      # current');
+  assert.equal(lines[7], 'temp: { value: 0, reset: { on: short, to: 0 } }');
+  assert.equal(lines[8], 'broken: { value: 9, reset: long }');
+  assert.equal(lines[15], '>     s1: { type: track, max: 4, value: 0, reset: { on: long, to: min } }');
+  assert.equal(lines[16], sheet[16]);
+  assert.deepEqual(
+    changes.map((c) => [c.label, c.from, c.to]),
+    [
+      ['HP', 20, 44],
+      ['temp', 5, 0],
+      ['s1', 3, 0],
+    ]
+  );
+  assert.equal(lines.length, sheet.length);
+});
+
+test('applyReset: short rest only, and nothing to do', () => {
+  const short = applyReset(sheet, 'short', t);
+  assert.deepEqual(short.changes.map((c) => c.label), ['temp']);
+  const session = applyReset(sheet, 'session', t);
+  assert.equal(session.lines[16], '>     fate: { value: 3, reset: { on: session, to: 3 } }');
+  const again = applyReset(session.lines, 'session', t);
+  assert.equal(again.changes.length, 0);
+});
+
+test('applyUndo restores, and refuses when values changed meanwhile', () => {
+  const { lines, changes } = applyReset(sheet, 'long', t);
+  assert.deepEqual(applyUndo(lines, changes), sheet);
+  const edited = lines.slice();
+  edited[4] = '  value: 30      # current';
+  assert.equal(applyUndo(edited, changes), null);
 });
