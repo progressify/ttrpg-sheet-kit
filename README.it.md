@@ -11,6 +11,8 @@ leggibile, ricercabile e sincronizzata come qualsiasi altra nota.
 
 Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il tuo homebrew.
 
+**[Scaricalo dai plugin della community di Obsidian](https://community.obsidian.md/plugins/ttrpg-sheet-kit)**
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="Una scheda con contatori, tracce di caselle ed elenco di incantesimi su colonne" width="560">
 </p>
@@ -34,9 +36,11 @@ Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il t
 
 ## Installazione
 
-**Dai plugin della community** (dopo la pubblicazione): Impostazioni → Plugin della community → Sfoglia → cerca "TTRPG Sheet Kit".
+**Dai plugin della community** (consigliato): in Obsidian vai in Impostazioni → Plugin della community → Sfoglia,
+cerca "TTRPG Sheet Kit", poi clicca Installa e Attiva.
+Puoi anche installarlo dalla sua pagina sul [sito della community di Obsidian](https://community.obsidian.md/plugins/ttrpg-sheet-kit).
 
-**Con BRAT**: aggiungi `progressify/ttrpg-sheet-kit` nel plugin [BRAT](https://github.com/TfTHacker/obsidian42-brat).
+**Con BRAT** (per provare le versioni in anteprima): aggiungi `progressify/ttrpg-sheet-kit` nel plugin [BRAT](https://github.com/TfTHacker/obsidian42-brat).
 
 **A mano**: scarica `main.js`, `manifest.json` e `styles.css` dall'[ultima release](https://github.com/progressify/ttrpg-sheet-kit/releases)
 in `<vault>/.obsidian/plugins/ttrpg-sheet-kit/`, poi attiva il plugin in

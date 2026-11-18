@@ -11,6 +11,8 @@ stays readable, searchable and synced like any other note.
 
 It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own homebrew.
 
+**[Get it from Obsidian Community plugins](https://community.obsidian.md/plugins/ttrpg-sheet-kit)**
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="A character sheet with counters, checkbox tracks and a spell list in columns" width="560">
 </p>
@@ -34,9 +36,11 @@ It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own ho
 
 ## Installation
 
-**From Community plugins** (once published): Settings → Community plugins → Browse → search "TTRPG Sheet Kit".
+**From Community plugins** (recommended): in Obsidian go to Settings → Community plugins → Browse,
+search "TTRPG Sheet Kit", then click Install and Enable.
+You can also install it from its page on the [Obsidian community site](https://community.obsidian.md/plugins/ttrpg-sheet-kit).
 
-**With BRAT**: add `progressify/ttrpg-sheet-kit` in the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin.
+**With BRAT** (to try pre-release versions): add `progressify/ttrpg-sheet-kit` in the [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin.
 
 **Manually**: download `main.js`, `manifest.json` and `styles.css` from the
 [latest release](https://github.com/progressify/ttrpg-sheet-kit/releases) into
