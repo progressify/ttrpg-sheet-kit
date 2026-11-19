@@ -29,7 +29,7 @@ Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il t
 - **Comandi di inserimento**: scegli un blocco pronto dalla palette dei comandi o dal clic destro, senza ricordare la sintassi.
 - Funziona in **modalità Lettura e Live Preview**, su desktop e mobile.
 - **Scrivi un valore** direttamente: `25`, `+8` (cura), `-17` (danno).
-- **Reset** per riposi, sessioni o giorni: un comando riporta tutti i contatori al punto di partenza.
+- **Reset** per riposi, sessioni, scene o qualunque momento usi il tuo gioco, con i nomi che scegli tu: un comando riporta tutti i contatori al punto di partenza.
 - **Annulla** l'ultima modifica, anche un intero reset.
 - **Condizioni** e altre etichette on/off (Avvelenato, Prono, Concentrazione…) da attivare con un clic.
 - Cambia solo il numero modificato: formattazione e commenti dello YAML restano intatti.
@@ -91,7 +91,7 @@ stress: { type: track, max: 3, value: 1 }
 | `step`  | di quanto cambia a ogni clic (Shift+clic = × 5)            | 1         |
 | `type`  | `number`, `track` per le caselle (serve `max`) oppure `tags` (vedi [Condizioni](#condizioni-tags)) | `number`  |
 | `mod`   | mostra il modificatore D&D, es. 14 → (+2)                  | `false`   |
-| `reset` | `{ on: <momento>, to: max \| min \| <numero> }`, vedi [Reset](#reset) | nessuno |
+| `reset` | `{ on: <momento> \| [<momenti>], to: max \| min \| <numero> }`; i momenti sono nomi scelti da te, vedi [Reset](#reset) | nessuno |
 
 In una traccia, cliccare una casella riempie la traccia fino a quella; cliccare l'ultima piena la svuota.
 
@@ -147,11 +147,18 @@ pf:     { value: 37, max: 44, reset: { on: long, to: max } }
 slot_1: { type: track, max: 4, value: 3, reset: { on: long, to: min } }
 recupero: { type: track, max: 1, value: 1, reset: { on: short, to: min } }
 fato:   { value: 1, reset: { on: session, to: 3 } }
+grinta: { value: 2, reset: { on: [scena, episodio, stagione], to: 0 } }
 ```
 ````
 
-- `on` è il momento, con il nome che vuoi: `short`, `long`, `session`, `day`…
-  **`long` ripristina anche ciò che si ripristina con `short`.**
+- `on` è il momento, e **il nome lo scegli tu**: non ce ne sono di predefiniti. Usa le parole del tuo gioco,
+  anche in italiano: `sessione`, `scena`, `episodio`, `alba`… I nomi in questa pagina sono solo esempi.
+  **Reset…** elenca esattamente i nomi usati nella nota aperta.
+- Gli unici nomi con un significato speciale sono `short` e `long`, per i riposi in stile D&D:
+  **`long` ripristina anche ciò che si ripristina con `short`.** Gli altri nomi non si ripristinano mai a vicenda
+  (con `breve` e `lungo` in italiano questa regola non vale).
+- Un contatore può rispondere a più momenti: elencali tra parentesi quadre, `on: [scena, episodio, stagione]`.
+  Torna allo stesso `to` qualunque di questi tu scelga.
 - `to` è il valore a cui tornare: `max`, `min` o un numero. Servono entrambi;
   se ne manca uno, sotto il contatore compare un avviso.
 - I contatori con reset mostrano un piccolo **↺** accanto al nome (passaci sopra per vedere quando e dove si ripristinano).

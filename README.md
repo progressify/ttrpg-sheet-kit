@@ -29,7 +29,7 @@ It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own ho
 - **Insert commands**: pick a ready-made block from the command palette or the right-click menu, no syntax to remember.
 - Works in **Reading view and Live Preview**, on desktop and mobile.
 - **Type a value** directly: `25`, `+8` (healing), `-17` (damage).
-- **Resets** for rests, sessions or days: one command brings every counter back to its starting point.
+- **Resets** for rests, sessions, scenes or any moment your game uses, with names you choose: one command brings every counter back to its starting point.
 - **Undo** the last change, a whole reset included.
 - **Conditions** and other on/off labels (Poisoned, Prone, Concentrating…) you toggle with a click.
 - Changes only the number that changed: your formatting and YAML comments are kept.
@@ -92,7 +92,7 @@ stress: { type: track, max: 3, value: 1 }
 | `step`  | change per click (Shift+click = × 5)                     | 1         |
 | `type`  | `number`, `track` for checkboxes (requires `max`), or `tags` (see [Conditions](#conditions-tags)) | `number`  |
 | `mod`   | show the D&D modifier, e.g. 14 → (+2)                    | `false`   |
-| `reset` | `{ on: <moment>, to: max \| min \| <number> }`, see [Resets](#resets) | none |
+| `reset` | `{ on: <moment> \| [<moments>], to: max \| min \| <number> }`; moments are names you choose, see [Resets](#resets) | none |
 
 In a track, clicking a box fills the track up to that box; clicking the last filled box empties it.
 
@@ -148,11 +148,17 @@ hp:     { value: 37, max: 44, reset: { on: long, to: max } }
 slot_1: { type: track, max: 4, value: 3, reset: { on: long, to: min } }
 second_wind: { type: track, max: 1, value: 1, reset: { on: short, to: min } }
 fate:   { value: 1, reset: { on: session, to: 3 } }
+grit:   { value: 2, reset: { on: [scene, episode, season], to: 0 } }
 ```
 ````
 
-- `on` is the moment, any name you like: `short`, `long`, `session`, `day`…
-  **`long` also resets what resets on `short`.**
+- `on` is the moment, and **you choose its name**: nothing is built in. Use the words of your game:
+  `session`, `scene`, `episode`, `downtime`, `dawn`… The names in this page are only examples.
+  **Reset…** lists exactly the names used in the open note.
+- The only names with a special meaning are `short` and `long`, for D&D-style rests:
+  **`long` also resets what resets on `short`.** Other names never reset each other.
+- A counter can respond to several moments: list them in brackets, `on: [scene, episode, season]`.
+  It goes back to the same `to` whichever of them you pick.
 - `to` is where the value goes back: `max`, `min` or a number. Both fields are required;
   if one is missing, a warning appears under the counter.
 - Counters with a reset show a small **↺** next to their name (hover it to see when and where it resets).

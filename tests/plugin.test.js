@@ -194,9 +194,9 @@ test('parseBlock: reset needs both on and to', () => {
     'f: { value: 1, reset: { on: long, to: lots } }',
   ].join('\n');
   const items = Object.fromEntries(parseBlock(src, t)[0].items.map((i) => [i.key, i]));
-  assert.deepEqual(items.hp.reset, { on: 'long', to: 'max' });
-  assert.deepEqual(items.stress.reset, { on: 'session', to: 'min' });
-  assert.deepEqual(items.fate.reset, { on: 'session', to: 3 });
+  assert.deepEqual(items.hp.reset, { on: ['long'], to: 'max' });
+  assert.deepEqual(items.stress.reset, { on: ['session'], to: 'min' });
+  assert.deepEqual(items.fate.reset, { on: ['session'], to: 3 });
   assert.equal(items.a.resetError, 'invalid');
   assert.equal(items.b.resetError, 'invalid');
   assert.equal(items.c.resetError, 'invalid');
@@ -227,6 +227,43 @@ const sheet = [
   '>     fate: { value: 1, reset: { on: session, to: 3 } }',
   '> ```',
 ];
+
+test('parseBlock: reset on a list of names', () => {
+  const src = [
+    'grit: { value: 2, max: 4, reset: { on: [scene, episode, season], to: 0 } }',
+    'luck: { value: 1, reset: { on: [episode, episode, " "], to: 0 } }',
+    'one: { value: 1, reset: { on: [season], to: 0 } }',
+    'none: { value: 1, reset: { on: [], to: 0 } }',
+    'conds: { type: tags, options: [a], value: [a], reset: { on: [scene, long], to: none } }',
+  ].join('\n');
+  const items = Object.fromEntries(parseBlock(src, t)[0].items.map((i) => [i.key, i]));
+  assert.deepEqual(items.grit.reset, { on: ['scene', 'episode', 'season'], to: 0 });
+  assert.deepEqual(items.luck.reset, { on: ['episode'], to: 0 });
+  assert.deepEqual(items.one.reset, { on: ['season'], to: 0 });
+  assert.equal(items.none.resetError, 'emptyOn');
+  assert.equal(items.none.reset, undefined);
+  assert.deepEqual(items.conds.reset, { on: ['scene', 'long'], to: [] });
+});
+
+test('countResets and applyReset with lists of reset names', () => {
+  const lines = [
+    '```ttrpgsk-counters',
+    'grit: { value: 2, reset: { on: [scene, episode, season], to: 0 } }',
+    'drive: { value: 3, reset: { on: [episode, season], to: 0 } }',
+    'legacy: { value: 1, reset: { on: season, to: 0 } }',
+    'ki: { value: 1, max: 3, reset: { on: [short], to: max } }',
+    '```',
+  ];
+  const counts = countResets(collectResets(lines, t));
+  assert.deepEqual(Object.fromEntries(counts), { scene: 1, episode: 2, season: 3, short: 1 });
+  assert.deepEqual(applyReset(lines, 'scene', t).changes.map((c) => c.label), ['grit']);
+  assert.deepEqual(applyReset(lines, 'episode', t).changes.map((c) => c.label), ['grit', 'drive']);
+  const season = applyReset(lines, 'season', t);
+  assert.deepEqual(season.changes.map((c) => c.label), ['grit', 'drive', 'legacy']);
+  assert.equal(season.lines[1], 'grit: { value: 0, reset: { on: [scene, episode, season], to: 0 } }');
+  // The long rest still covers what resets on a short rest, list or not.
+  assert.deepEqual(applyReset(lines, 'long', t).changes.map((c) => c.label), ['ki']);
+});
 
 test('findBlocks and countResets', () => {
   assert.deepEqual(
@@ -295,8 +332,8 @@ test('parseBlock: tags counters', () => {
   assert.equal(items.c.type, 'tags');
   assert.deepEqual(items.c.options, ['Blinded', 'Poisoned', 'Prone', 'Hasted']);
   assert.deepEqual(items.c.value, ['Poisoned', 'Hasted']);
-  assert.deepEqual(items.c.reset, { on: 'long', to: [] });
-  assert.deepEqual(items.d.reset, { on: 'short', to: ['a'] });
+  assert.deepEqual(items.c.reset, { on: ['long'], to: [] });
+  assert.deepEqual(items.d.reset, { on: ['short'], to: ['a'] });
   assert.equal(items.e.tagsError, 'notList');
   assert.equal(items.f.resetError, 'tagsTo');
   for (const k of Object.keys(t.tagsErrors)) assert.ok(STRINGS.it.tagsErrors[k], k);

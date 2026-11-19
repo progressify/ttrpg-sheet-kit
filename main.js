@@ -30,7 +30,7 @@ const STRINGS = {
     resetCommand: 'Reset…',
     resetPlaceholder: 'Choose what to reset…',
     resetCount: (n) => (n === 1 ? '1 value' : `${n} values`),
-    resetTooltip: (on, to) => `Resets on "${on}" → ${to}`,
+    resetTooltip: (on, to) => `Resets on ${on.map((n) => `"${n}"`).join(', ')} → ${to}`,
     resetDone: (name, n) => `Reset "${name}": ${n === 1 ? '1 value' : `${n} values`} restored`,
     resetNothing: (name) => `Reset "${name}": every value is already at its reset point.`,
     resetErrors: {
@@ -38,6 +38,7 @@ const STRINGS = {
       noMax: 'reset to "max" needs a max',
       noMin: 'reset to "min" needs a min (min: null has none)',
       tagsTo: 'for tags, reset "to" must be none or a list, e.g. to: none',
+      emptyOn: 'reset "on" needs at least one name, e.g. on: [scene, episode]',
     },
     addTag: 'Add a label',
     addTagPlaceholder: 'New label…',
@@ -96,7 +97,7 @@ const STRINGS = {
           '  step: 1                # Shift+click = step × 5',
           '  # type: track          # boxes instead of −/+ (needs max)',
           '  # mod: true            # D&D-style modifier',
-          '  reset: { on: long, to: max }   # Reset… command: back to max after a long rest',
+          '  reset: { on: long, to: max }   # Reset… → long: back to max. Name moments as you like: session, scene…',
         ],
       },
       groups: {
@@ -147,7 +148,7 @@ const STRINGS = {
     resetCommand: 'Reset…',
     resetPlaceholder: 'Scegli cosa ripristinare…',
     resetCount: (n) => (n === 1 ? '1 valore' : `${n} valori`),
-    resetTooltip: (on, to) => `Si ripristina con "${on}" → ${to}`,
+    resetTooltip: (on, to) => `Si ripristina con ${on.map((n) => `"${n}"`).join(', ')} → ${to}`,
     resetDone: (name, n) => `Reset "${name}": ${n === 1 ? '1 valore ripristinato' : `${n} valori ripristinati`}`,
     resetNothing: (name) => `Reset "${name}": tutti i valori sono già al punto di reset.`,
     resetErrors: {
@@ -155,6 +156,7 @@ const STRINGS = {
       noMax: 'il reset a "max" richiede un max',
       noMin: 'il reset a "min" richiede un min (min: null non ne ha)',
       tagsTo: 'per le etichette, il "to" del reset deve essere none o una lista, es. to: none',
+      emptyOn: 'l\'"on" del reset richiede almeno un nome, es. on: [scena, episodio]',
     },
     addTag: 'Aggiungi un\'etichetta',
     addTagPlaceholder: 'Nuova etichetta…',
@@ -213,7 +215,7 @@ const STRINGS = {
           '  step: 1                # Shift+clic = step × 5',
           '  # type: track          # caselle invece di −/+ (serve max)',
           '  # mod: true            # modificatore stile D&D',
-          '  reset: { on: long, to: max }   # comando Reset…: torna al massimo col riposo lungo',
+          '  reset: { on: long, to: max }   # Reset… → long: torna al massimo. Dai ai momenti i nomi che vuoi: sessione, scena…',
         ],
       },
       groups: {
@@ -347,13 +349,19 @@ function normalizeTags(item, raw) {
 // { on: <moment>, to: none | [labels] }. Both fields are required.
 // Sets item.reset, or item.resetError with a key of STRINGS.*.resetErrors.
 function parseReset(item, raw) {
-  const on = isPlainObject(raw) ? raw.on : undefined;
+  let on = isPlainObject(raw) ? raw.on : undefined;
   const to = isPlainObject(raw) ? raw.to : undefined;
-  if (on === undefined || on === null || String(on).trim() === '' || to === undefined || to === null) {
+  if (on === undefined || on === null || (!Array.isArray(on) && String(on).trim() === '') || to === undefined || to === null) {
     item.resetError = 'invalid';
+    return;
+  }
+  // "on" is one reset name or a list of them: on: long, on: [scene, episode]
+  on = [...new Set((Array.isArray(on) ? on : [on]).filter((n) => n !== null).map((n) => String(n).trim()).filter(Boolean))];
+  if (!on.length) {
+    item.resetError = 'emptyOn';
   } else if (item.type === 'tags') {
-    if (to === 'none') item.reset = { on: String(on).trim(), to: [] };
-    else if (Array.isArray(to)) item.reset = { on: String(on).trim(), to: to.map((x) => String(x).trim()) };
+    if (to === 'none') item.reset = { on, to: [] };
+    else if (Array.isArray(to)) item.reset = { on, to: to.map((x) => String(x).trim()) };
     else item.resetError = 'tagsTo';
   } else if (to === 'max' && item.max === null) {
     item.resetError = 'noMax';
@@ -362,13 +370,14 @@ function parseReset(item, raw) {
   } else if (to !== 'max' && to !== 'min' && !Number.isFinite(Number(to))) {
     item.resetError = 'invalid';
   } else {
-    item.reset = { on: String(on).trim(), to: to === 'max' || to === 'min' ? to : Number(to) };
+    item.reset = { on, to: to === 'max' || to === 'min' ? to : Number(to) };
   }
 }
 
+// Whether a counter with reset names `on` (a list) responds to the reset `name`.
 // The long rest also resets what resets on a short rest.
 function resetMatches(on, name) {
-  return on === name || (name === 'long' && on === 'short');
+  return on.some((n) => n === name || (name === 'long' && n === 'short'));
 }
 
 function resetTarget(item) {
@@ -683,7 +692,7 @@ function collectResets(lines, t) {
 // Reset moments found in the file, with how many counters each one resets.
 function countResets(entries) {
   const names = new Map();
-  for (const e of entries) names.set(e.item.reset.on, 0);
+  for (const e of entries) for (const n of e.item.reset.on) names.set(n, 0);
   // "long" is listed only when the note uses it, but then also counts "short".
   for (const name of names.keys()) {
     names.set(name, entries.filter((e) => resetMatches(e.item.reset.on, name)).length);

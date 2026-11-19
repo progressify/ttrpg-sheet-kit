@@ -48,8 +48,9 @@ CHA: 8
 > ```
 > ```ttrpgsk-counters
 > label: Death saves
-> successes: { label: Successes, type: track, max: 3, value: 0 }
-> failures: { label: Failures, type: track, max: 3, value: 0 }
+> # Two reset moments: Reset… → healed once she's back on her feet, or a long rest
+> successes: { label: Successes, type: track, max: 3, value: 0, reset: { on: [healed, long], to: min } }
+> failures: { label: Failures, type: track, max: 3, value: 0, reset: { on: [healed, long], to: min } }
 > ```
 > ```ttrpgsk-counters
 > label: Inspiration
