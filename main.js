@@ -37,6 +37,13 @@ const STRINGS = {
       invalid: 'reset needs both "on" and "to", e.g. reset: { on: long, to: max }',
       noMax: 'reset to "max" needs a max',
       noMin: 'reset to "min" needs a min (min: null has none)',
+      tagsTo: 'for tags, reset "to" must be none or a list, e.g. to: none',
+    },
+    addTag: 'Add a label',
+    addTagPlaceholder: 'New label…',
+    tagsErrors: {
+      notList: 'options and value must be lists, e.g. value: [Poisoned]',
+      notFlow: 'write options and value in brackets on one line, e.g. value: [Poisoned], to make them clickable',
     },
     undoCommand: 'Undo last change',
     undoButton: 'Undo',
@@ -109,6 +116,18 @@ const STRINGS = {
           '    stress: { type: track, max: 3, value: 0 }',
         ],
       },
+      conditions: {
+        name: 'D&D conditions',
+        desc: 'Clickable conditions (Poisoned, Prone…), ＋ adds your own',
+        lines: [
+          'conditions:',
+          '  label: Conditions',
+          '  type: tags',
+          '  options: [Blinded, Charmed, Deafened, Exhaustion, Frightened, Grappled, Incapacitated, Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, Unconscious]',
+          '  value: []             # active ones, e.g. [Poisoned, Prone]',
+          '  # reset: { on: long, to: none }   # clear them all with Reset…',
+        ],
+      },
       columns: {
         name: 'Columns callout',
         desc: 'Text in two columns (wraps the selected text)',
@@ -135,6 +154,13 @@ const STRINGS = {
       invalid: 'reset richiede sia "on" sia "to", es. reset: { on: long, to: max }',
       noMax: 'il reset a "max" richiede un max',
       noMin: 'il reset a "min" richiede un min (min: null non ne ha)',
+      tagsTo: 'per le etichette, il "to" del reset deve essere none o una lista, es. to: none',
+    },
+    addTag: 'Aggiungi un\'etichetta',
+    addTagPlaceholder: 'Nuova etichetta…',
+    tagsErrors: {
+      notList: 'options e value devono essere liste, es. value: [Avvelenato]',
+      notFlow: 'scrivi options e value tra parentesi quadre su una riga, es. value: [Avvelenato], per renderle cliccabili',
     },
     undoCommand: 'Annulla ultima modifica',
     undoButton: 'Annulla',
@@ -207,6 +233,18 @@ const STRINGS = {
           '    stress: { type: track, max: 3, value: 0 }',
         ],
       },
+      conditions: {
+        name: 'Condizioni D&D',
+        desc: 'Condizioni cliccabili (Avvelenato, Prono…), ＋ ne aggiunge altre',
+        lines: [
+          'condizioni:',
+          '  label: Condizioni',
+          '  type: tags',
+          '  options: [Accecato, Affascinato, Afferrato, Assordato, Avvelenato, Incapacitato, Indebolimento, Invisibile, Paralizzato, Pietrificato, Privo di sensi, Prono, Spaventato, Stordito, Trattenuto]',
+          '  value: []             # quelle attive, es. [Avvelenato, Prono]',
+          '  # reset: { on: long, to: none }   # le toglie tutte con Reset…',
+        ],
+      },
       columns: {
         name: 'Callout a colonne',
         desc: 'Testo su due colonne (avvolge il testo selezionato)',
@@ -222,7 +260,7 @@ function getStrings() {
 }
 
 // Command ids stay the same in every language, so hotkeys survive a language change.
-const TEMPLATE_IDS = ['vertical', 'horizontal', 'abilities', 'track', 'detailed', 'groups', 'columns'];
+const TEMPLATE_IDS = ['vertical', 'horizontal', 'abilities', 'track', 'conditions', 'detailed', 'groups', 'columns'];
 
 function buildTemplates(t) {
   return TEMPLATE_IDS.map((id) => {
@@ -266,6 +304,8 @@ function normalizeItem(key, raw, groupMod) {
     mod: !!groupMod,
   };
 
+  if (isPlainObject(raw) && raw.type === 'tags') return normalizeTags(item, raw);
+
   if (isPlainObject(raw)) {
     const parsed = parseValue(raw.value ?? 0);
     if (!parsed) return null;
@@ -288,13 +328,33 @@ function normalizeItem(key, raw, groupMod) {
   return item;
 }
 
-// reset: { on: <moment>, to: max | min | <number> }. Both fields are required.
+// Tags (e.g. conditions): options: [..] are the labels, value: [..] the active ones.
+// Sets item.tagsError ('notList') when either is not a list.
+function normalizeTags(item, raw) {
+  item.type = 'tags';
+  item.label = String(raw.label ?? raw.name ?? item.key);
+  const isList = (v) => v === undefined || v === null || Array.isArray(v);
+  if (!isList(raw.options) || !isList(raw.value)) item.tagsError = 'notList';
+  const strings = (v) => (Array.isArray(v) ? v.filter((x) => x !== null).map((x) => String(x).trim()) : []);
+  item.value = [...new Set(strings(raw.value))];
+  // Active labels missing from options are still shown.
+  item.options = [...new Set([...strings(raw.options), ...item.value])];
+  if (raw.reset !== undefined) parseReset(item, raw.reset);
+  return item;
+}
+
+// reset: { on: <moment>, to: max | min | <number> }, or for tags
+// { on: <moment>, to: none | [labels] }. Both fields are required.
 // Sets item.reset, or item.resetError with a key of STRINGS.*.resetErrors.
 function parseReset(item, raw) {
   const on = isPlainObject(raw) ? raw.on : undefined;
   const to = isPlainObject(raw) ? raw.to : undefined;
   if (on === undefined || on === null || String(on).trim() === '' || to === undefined || to === null) {
     item.resetError = 'invalid';
+  } else if (item.type === 'tags') {
+    if (to === 'none') item.reset = { on: String(on).trim(), to: [] };
+    else if (Array.isArray(to)) item.reset = { on: String(on).trim(), to: to.map((x) => String(x).trim()) };
+    else item.resetError = 'tagsTo';
   } else if (to === 'max' && item.max === null) {
     item.resetError = 'noMax';
   } else if (to === 'min' && item.min === null) {
@@ -312,6 +372,7 @@ function resetMatches(on, name) {
 }
 
 function resetTarget(item) {
+  if (item.type === 'tags') return item.reset.to;
   if (item.reset.to === 'max') return item.max;
   if (item.reset.to === 'min') return item.min;
   return clamp(item.reset.to, item.min, item.max);
@@ -401,7 +462,8 @@ function findChild(lines, start, parentIndent, key) {
 
 // Finds the number to change for the counter at `path`.
 // Returns { line, start, end, value } or null.
-function findValueToken(lines, path) {
+// Line of the counter at `path`: { idx, parentIndent } or null.
+function findItemLine(lines, path) {
   let idx = -1;
   let parentIndent = -1;
   let start = 0;
@@ -411,6 +473,13 @@ function findValueToken(lines, path) {
     parentIndent = indentOf(lines[idx]);
     start = idx + 1;
   }
+  return { idx, parentIndent };
+}
+
+function findValueToken(lines, path) {
+  const found = findItemLine(lines, path);
+  if (!found) return null;
+  const { idx, parentIndent } = found;
 
   const line = lines[idx];
   const colon = line.indexOf(':', indentOf(line));
@@ -445,6 +514,88 @@ function findValueToken(lines, path) {
   }
 
   return null;
+}
+
+// Index of the "]" closing the flow list that opens at `open`, or -1.
+function closingBracket(text, open) {
+  let quote = null;
+  for (let i = open + 1; i < text.length; i++) {
+    const ch = text[i];
+    if (quote) {
+      if (ch === quote) quote = null;
+    } else if (ch === '"' || ch === "'") {
+      quote = ch;
+    } else if (ch === ']') {
+      return i;
+    }
+  }
+  return -1;
+}
+
+// Finds the flow list `key: [ ... ]` of the counter at `path`, written either
+// in its flow map (`x: { value: [a] }`) or on its own line (`  value: [a]`).
+// Returns { line, start, end, list } (end is after "]") or null.
+function findListToken(lines, path, key) {
+  const found = findItemLine(lines, path);
+  if (!found) return null;
+  const re = new RegExp(`(^|[{,\\s])(["']?)${escapeRegex(key)}\\2\\s*:\\s*\\[`);
+  const pick = (lineIdx, from) => {
+    const text = lines[lineIdx];
+    const m = re.exec(text.slice(from));
+    if (!m) return null;
+    const open = from + m.index + m[0].length - 1;
+    const close = closingBracket(text, open);
+    if (close < 0) return null;
+    let list;
+    try {
+      list = parseYaml(`v: ${text.slice(open, close + 1)}`).v;
+    } catch (e) {
+      return null;
+    }
+    if (!Array.isArray(list)) return null;
+    return { line: lineIdx, start: open, end: close + 1, list: list.map((x) => String(x)) };
+  };
+
+  const line = lines[found.idx];
+  const rest = line.slice(line.indexOf(':', indentOf(line)) + 1);
+  if (rest.trim().startsWith('{')) return pick(found.idx, line.indexOf(':', indentOf(line)) + 1);
+  if (rest.trim() !== '' && !rest.trim().startsWith('#')) return null;
+  const child = findChild(lines, found.idx + 1, found.parentIndent, key);
+  return child < 0 ? null : pick(child, 0);
+}
+
+// Writes a list as YAML flow: [Poisoned, "Hex: cursed"].
+function formatList(list) {
+  const plain = /^[^\s,:#[\]{}"'&*!|>%@`-][^,:#[\]{}]*$/;
+  const reserved = /^(true|false|null|yes|no|on|off|~|-?\d+(\.\d+)?)$/i;
+  const item = (x) => (plain.test(x) && !reserved.test(x) && x === x.trim() ? x : JSON.stringify(x));
+  return `[${list.map(item).join(', ')}]`;
+}
+
+function sameList(a, b) {
+  return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
+// Applies `compute({ options, value })` to a tags counter; the result may
+// change either list. Returns { lines, from, to } or null if a list is not
+// written as a [flow list].
+function applyTags(lines, path, compute) {
+  const opt = findListToken(lines, path, 'options');
+  const val = findListToken(lines, path, 'value');
+  if (!opt || !val) return null;
+  const from = { options: opt.list, value: val.list };
+  const to = compute(from);
+  const out = lines.slice();
+  // Replace the later token first so the earlier one's offsets stay valid.
+  const edits = [];
+  if (!sameList(from.options, to.options)) edits.push([opt, to.options]);
+  if (!sameList(from.value, to.value)) edits.push([val, to.value]);
+  edits.sort((a, b) => b[0].line - a[0].line || b[0].start - a[0].start);
+  for (const [tok, list] of edits) {
+    const l = out[tok.line];
+    out[tok.line] = l.slice(0, tok.start) + formatList(list) + l.slice(tok.end);
+  }
+  return { lines: out, from, to };
 }
 
 // Applies `compute(currentValue)` to the counter.
@@ -541,7 +692,8 @@ function countResets(entries) {
 }
 
 // Applies the reset `name` to the file lines.
-// Returns { lines, changes: [{ block, path, label, from, to }] }.
+// Returns { lines, changes: [{ block, path, label, from, to, kind? }] }:
+// numbers for counters and tracks, { options, value } lists for kind 'tags'.
 function applyReset(lines, name, t) {
   const out = lines.slice();
   const blocks = findBlocks(out);
@@ -550,10 +702,19 @@ function applyReset(lines, name, t) {
     if (!resetMatches(e.item.reset.on, name)) continue;
     const block = blocks[e.block];
     const target = resetTarget(e.item);
-    const r = applyToBlock(blockBody(out, block), e.path, () => target);
-    if (!r || r.from === r.to) continue;
+    const body = blockBody(out, block);
+    let r;
+    if (e.item.type === 'tags') {
+      r = applyTags(body, e.path, (cur) => ({ options: [...new Set([...cur.options, ...target])], value: target }));
+      if (!r || (sameList(r.from.value, r.to.value) && sameList(r.from.options, r.to.options))) continue;
+    } else {
+      r = applyToBlock(body, e.path, () => target);
+      if (!r || r.from === r.to) continue;
+    }
     writeBody(out, block, r.lines);
-    changes.push({ block: e.block, path: e.path, label: e.item.label, from: r.from, to: r.to });
+    const change = { block: e.block, path: e.path, label: e.item.label, from: r.from, to: r.to };
+    if (e.item.type === 'tags') change.kind = 'tags';
+    changes.push(change);
   }
   return { lines: out, changes };
 }
@@ -563,18 +724,32 @@ function applyReset(lines, name, t) {
 function applyUndo(lines, changes) {
   const out = lines.slice();
   const blocks = findBlocks(out);
+  const holds = (body, c) => {
+    if (c.kind === 'tags') {
+      const opt = findListToken(body, c.path, 'options');
+      const val = findListToken(body, c.path, 'value');
+      return opt && val && sameList(opt.list, c.to.options) && sameList(val.list, c.to.value);
+    }
+    const tok = findValueToken(body, c.path);
+    return tok && tok.value === c.to;
+  };
   for (const c of changes) {
     const block = blocks[c.block];
-    if (!block) return null;
-    const tok = findValueToken(blockBody(out, block), c.path);
-    if (!tok || tok.value !== c.to) return null;
+    if (!block || !holds(blockBody(out, block), c)) return null;
   }
   for (const c of [...changes].reverse()) {
     const block = blocks[c.block];
-    const r = applyToBlock(blockBody(out, block), c.path, () => c.from);
+    const body = blockBody(out, block);
+    const r = c.kind === 'tags' ? applyTags(body, c.path, () => c.from) : applyToBlock(body, c.path, () => c.from);
     writeBody(out, block, r.lines);
   }
   return out;
+}
+
+// Short text for a change in notices: "37" or "Poisoned, Prone" ("—" if empty).
+function describeValue(v) {
+  if (v && typeof v === 'object') return v.value.length ? v.value.join(', ') : '—';
+  return String(v);
 }
 
 // Text typed in a counter: "25" sets it, "+5" / "-17" add or subtract,
@@ -826,7 +1001,7 @@ class TtrpgSheetKitPlugin extends Plugin {
     const entry = this.record(file, changes);
     const summary = changes
       .slice(0, 4)
-      .map((c) => `${c.label} ${c.from}→${c.to}`)
+      .map((c) => `${c.label} ${describeValue(c.from)}→${describeValue(c.to)}`)
       .join(' · ');
     let notice;
     const content = createFragment((f) => {
@@ -853,6 +1028,7 @@ class TtrpgSheetKitPlugin extends Plugin {
       return;
     }
 
+    const sourceLines = source.split('\n');
     const root = el.createDiv({ cls: 'tsk-counters' });
     for (const group of groups) {
       const g = root.createDiv({ cls: `tsk-group tsk-layout-${group.layout}` });
@@ -861,6 +1037,10 @@ class TtrpgSheetKitPlugin extends Plugin {
       const list = g.createDiv({ cls: 'tsk-items' });
       for (const item of group.items) {
         const path = itemPath(group, item);
+        // Tags can only be rewritten when both lists are [flow lists].
+        if (item.type === 'tags' && !item.tagsError) {
+          if (!findListToken(sourceLines, path, 'options') || !findListToken(sourceLines, path, 'value')) item.tagsError = 'notFlow';
+        }
         this.renderItem(list, item, (compute) => this.change(el, source, ctx, path, item, compute));
       }
     }
@@ -870,10 +1050,30 @@ class TtrpgSheetKitPlugin extends Plugin {
     const row = parent.createDiv({ cls: `tsk-item tsk-type-${item.type}` });
     const label = row.createDiv({ cls: 'tsk-label', text: item.label });
     if (item.reset) {
-      label.createSpan({ cls: 'tsk-reset-icon', text: '↺', attr: { 'aria-label': this.t.resetTooltip(item.reset.on, item.reset.to) } });
+      const to = Array.isArray(item.reset.to) ? item.reset.to.join(', ') || 'none' : item.reset.to;
+      label.createSpan({ cls: 'tsk-reset-icon', text: '↺', attr: { 'aria-label': this.t.resetTooltip(item.reset.on, to) } });
     }
 
-    if (item.type === 'track') {
+    if (item.type === 'tags') {
+      const tags = row.createDiv({ cls: 'tsk-tags' });
+      const editable = !item.tagsError;
+      for (const name of item.options) {
+        const active = item.value.includes(name);
+        const tag = tags.createEl('button', { cls: 'tsk-tag' + (active ? ' is-active' : ''), text: name, attr: { 'aria-pressed': String(active) } });
+        if (!editable) tag.disabled = true;
+        else
+          bindClick(tag, () =>
+            change((cur) => ({
+              options: cur.options,
+              value: cur.value.includes(name) ? cur.value.filter((x) => x !== name) : [...cur.value, name],
+            }))
+          );
+      }
+      if (editable) {
+        const add = tags.createEl('button', { cls: 'tsk-tag tsk-tag-add', text: '＋', attr: { 'aria-label': this.t.addTag } });
+        bindClick(add, () => this.startAddTag(tags, add, change));
+      }
+    } else if (item.type === 'track') {
       const track = row.createDiv({ cls: 'tsk-track' });
       for (let i = 0; i < item.max; i++) {
         const box = track.createEl('button', {
@@ -897,7 +1097,45 @@ class TtrpgSheetKitPlugin extends Plugin {
       bindClick(value, () => this.startEdit(value, item, change));
     }
 
+    if (item.tagsError) row.createDiv({ cls: 'tsk-warning', text: this.t.tagsErrors[item.tagsError] });
     if (item.resetError) row.createDiv({ cls: 'tsk-warning', text: this.t.resetErrors[item.resetError] });
+  }
+
+  // Replaces the ＋ tag with a text field: Enter adds and activates the label,
+  // Esc or clicking away cancels.
+  startAddTag(tags, addBtn, change) {
+    if (tags.hasClass('is-adding')) return;
+    tags.addClass('is-adding');
+    const input = tags.createEl('input', { cls: 'tsk-input tsk-tag-input', type: 'text', attr: { placeholder: this.t.addTagPlaceholder } });
+    let done = false;
+    const close = () => {
+      if (done) return;
+      done = true;
+      input.remove();
+      tags.removeClass('is-adding');
+    };
+    for (const ev of ['mousedown', 'click']) input.addEventListener(ev, (e) => e.stopPropagation());
+    input.addEventListener('keydown', (e) => {
+      e.stopPropagation();
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const name = input.value.trim();
+        if (!name) {
+          close();
+          return;
+        }
+        close();
+        change((cur) => ({
+          options: cur.options.includes(name) ? cur.options : [...cur.options, name],
+          value: cur.value.includes(name) ? cur.value : [...cur.value, name],
+        }));
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        close();
+      }
+    });
+    input.addEventListener('blur', close);
+    input.focus();
   }
 
   // Turns the number into a text field: Enter saves, Esc or clicking away cancels.
@@ -951,14 +1189,18 @@ class TtrpgSheetKitPlugin extends Plugin {
         failed = true;
         return data;
       }
-      const r = applyToBlock(blockBody(lines, block), path, (cur) => clamp(compute(cur), item.min, item.max));
+      const body = blockBody(lines, block);
+      const tags = item.type === 'tags';
+      const r = tags ? applyTags(body, path, compute) : applyToBlock(body, path, (cur) => clamp(compute(cur), item.min, item.max));
       if (!r) {
         failed = true;
         return data;
       }
-      if (r.from === r.to) return data;
+      const same = tags ? sameList(r.from.value, r.to.value) && sameList(r.from.options, r.to.options) : r.from === r.to;
+      if (same) return data;
       writeBody(lines, block, r.lines);
       changed = { block: block.index, path, label: item.label, from: r.from, to: r.to };
+      if (tags) changed.kind = 'tags';
       return lines.join('\n');
     });
 
@@ -995,6 +1237,9 @@ module.exports._internals = {
   countResets,
   applyReset,
   applyUndo,
+  applyTags,
+  findListToken,
+  formatList,
   parseInput,
   formatMod,
   columnsCallout,

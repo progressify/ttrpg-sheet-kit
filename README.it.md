@@ -31,6 +31,7 @@ Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il t
 - **Scrivi un valore** direttamente: `25`, `+8` (cura), `-17` (danno).
 - **Reset** per riposi, sessioni o giorni: un comando riporta tutti i contatori al punto di partenza.
 - **Annulla** l'ultima modifica, anche un intero reset.
+- **Condizioni** e altre etichette on/off (Avvelenato, Prono, Concentrazione…) da attivare con un clic.
 - Cambia solo il numero modificato: formattazione e commenti dello YAML restano intatti.
 - Interfaccia in italiano e inglese (segue la lingua di Obsidian).
 
@@ -88,11 +89,40 @@ stress: { type: track, max: 3, value: 1 }
 | `max`   | massimo                                                    | nessuno   |
 | `min`   | minimo (`null` = nessun minimo)                            | 0         |
 | `step`  | di quanto cambia a ogni clic (Shift+clic = × 5)            | 1         |
-| `type`  | `number`, oppure `track` per le caselle (serve `max`)      | `number`  |
+| `type`  | `number`, `track` per le caselle (serve `max`) oppure `tags` (vedi [Condizioni](#condizioni-tags)) | `number`  |
 | `mod`   | mostra il modificatore D&D, es. 14 → (+2)                  | `false`   |
 | `reset` | `{ on: <momento>, to: max \| min \| <numero> }`, vedi [Reset](#reset) | nessuno |
 
 In una traccia, cliccare una casella riempie la traccia fino a quella; cliccare l'ultima piena la svuota.
+
+### Condizioni (tags)
+
+Un contatore `tags` è un insieme di etichette da accendere e spegnere con un clic: condizioni, stati,
+effetti di incantesimi. `options` elenca le etichette, `value` quelle attive.
+
+````markdown
+```ttrpgsk-counters
+condizioni:
+  label: Condizioni
+  type: tags
+  options: [Accecato, Affascinato, Spaventato, Avvelenato, Prono, Trattenuto]
+  value: [Avvelenato]
+  reset: { on: long, to: none }   # facoltativo: le toglie tutte con Reset…
+```
+````
+
+<p>
+  <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-05-conditions.png" alt="Condizioni mostrate come etichette, con Concentrating attiva e un bottone +" width="543">
+</p>
+
+- Clicca un'etichetta per accenderla (piena) o spegnerla.
+- Clicca **＋** per scrivere una nuova etichetta (es. *Velocizzato*): viene aggiunta a `options` e accesa.
+- Anche qui funziona `reset`: `to: none` le spegne tutte, `to: [Concentrazione]` lascia accese solo quelle indicate.
+- Le modifiche si possono annullare come le altre.
+- Scrivi `options` e `value` **tra parentesi quadre** (`[a, b]`): le liste scritte a righe con `- voce`
+  vengono mostrate ma non sono cliccabili, e un avviso spiega perché.
+
+Il modello **Condizioni D&D** (**Inserisci blocco…**) aggiunge le 15 condizioni ufficiali, in italiano o in inglese.
 
 ### Scrivere un valore
 
@@ -271,6 +301,13 @@ Mi farebbe piacere sapere come usi TTRPG Sheet Kit al tuo tavolo.
   con una copia del blocco che non funziona e, se puoi, uno screenshot.
 - **Vuoi solo dire cosa ne pensi** delle funzionalità attuali, nel bene o nel male? [Lascia un feedback](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feedback.yml):
   ogni commento aiuta a decidere cosa migliorare. Puoi scrivere anche in italiano.
+
+### Idee in valutazione
+
+Dimmi in una [richiesta](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feature_request.yml)
+se useresti qualcuna di queste:
+
+- **Descrizioni delle condizioni**: passando sopra un'etichetta se ne legge la regola (es. *Avvelenato: svantaggio ai tiri per colpire e alle prove di caratteristica*).
 
 ## Sviluppo
 

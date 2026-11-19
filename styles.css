@@ -63,6 +63,63 @@
   box-shadow: 0 0 0 1px var(--text-error);
 }
 
+/* Tags (e.g. conditions): one chip per label, filled when active */
+.tsk-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+}
+
+.tsk-layout-vertical .tsk-type-tags .tsk-tags {
+  flex-basis: 100%;
+  padding-top: 0.25em;
+}
+
+.tsk-layout-horizontal .tsk-type-tags .tsk-tags {
+  justify-content: center;
+}
+
+.tsk-counters button.tsk-tag {
+  height: auto;
+  padding: 0.15em 0.7em;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  color: var(--text-muted);
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+.tsk-counters button.tsk-tag:hover {
+  border-color: var(--interactive-accent);
+  color: var(--text-normal);
+}
+
+.tsk-counters button.tsk-tag.is-active {
+  border-color: var(--interactive-accent);
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.tsk-counters button.tsk-tag:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.tsk-counters button.tsk-tag-add {
+  border-style: dashed;
+}
+
+.tsk-tags.is-adding > .tsk-tag-add {
+  display: none;
+}
+
+.tsk-counters input.tsk-tag-input {
+  width: 9em;
+  border-radius: 999px;
+}
+
 /* ↺ next to the label of counters with a reset */
 .tsk-reset-icon {
   margin-left: 0.3em;

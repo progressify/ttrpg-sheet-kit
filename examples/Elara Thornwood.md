@@ -56,6 +56,16 @@ CHA: 8
 > inspiration: { label: Heroic inspiration, type: track, max: 1, value: 1 }
 > ```
 
+<!-- Conditions: click to toggle, ＋ to add your own. Cleared by a long rest. -->
+```ttrpgsk-counters
+conditions:
+  label: Conditions
+  type: tags
+  options: [Blinded, Charmed, Frightened, Grappled, Poisoned, Prone, Restrained, Concentrating]
+  value: [Concentrating]
+  reset: { on: long, to: none }
+```
+
 ## Spellcasting
 *Spell save DC 13 · Spell attack +5 · Wisdom*
 

@@ -31,6 +31,9 @@ const {
   collectResets,
   applyReset,
   applyUndo,
+  applyTags,
+  findListToken,
+  formatList,
   parseInput,
   formatMod,
   columnsCallout,
@@ -270,4 +273,75 @@ test('applyUndo restores, and refuses when values changed meanwhile', () => {
   const edited = lines.slice();
   edited[4] = '  value: 30      # current';
   assert.equal(applyUndo(edited, changes), null);
+});
+
+// ---------------------------------------------------------------------------
+// Tags (conditions)
+// ---------------------------------------------------------------------------
+
+test('parseBlock: tags counters', () => {
+  const src = [
+    'c:',
+    '  label: Conditions',
+    '  type: tags',
+    '  options: [Blinded, Poisoned, Prone]',
+    '  value: [Poisoned, Hasted]',
+    '  reset: { on: long, to: none }',
+    'd: { type: tags, options: [a, b], value: [], reset: { on: short, to: [a] } }',
+    'e: { type: tags, options: oops, value: [] }',
+    'f: { type: tags, options: [a], value: [], reset: { on: long, to: max } }',
+  ].join('\n');
+  const items = Object.fromEntries(parseBlock(src, t)[0].items.map((i) => [i.key, i]));
+  assert.equal(items.c.type, 'tags');
+  assert.deepEqual(items.c.options, ['Blinded', 'Poisoned', 'Prone', 'Hasted']);
+  assert.deepEqual(items.c.value, ['Poisoned', 'Hasted']);
+  assert.deepEqual(items.c.reset, { on: 'long', to: [] });
+  assert.deepEqual(items.d.reset, { on: 'short', to: ['a'] });
+  assert.equal(items.e.tagsError, 'notList');
+  assert.equal(items.f.resetError, 'tagsTo');
+  for (const k of Object.keys(t.tagsErrors)) assert.ok(STRINGS.it.tagsErrors[k], k);
+});
+
+test('formatList quotes only when needed', () => {
+  assert.equal(formatList([]), '[]');
+  assert.equal(formatList(['Poisoned', 'Privo di sensi']), '[Poisoned, Privo di sensi]');
+  assert.equal(formatList(['Hex: cursed', 'a,b', 'true', '3', "Wanderer's"]), `["Hex: cursed", "a,b", "true", "3", Wanderer's]`);
+});
+
+test('findListToken and applyTags: block and flow forms', () => {
+  const block = ['c:', '  type: tags', '  options: [Blinded, Poisoned]   # all', '  value: [Poisoned]', 'x: 1'];
+  assert.deepEqual(findListToken(block, ['c'], 'value').list, ['Poisoned']);
+  const toggled = applyTags(block, ['c'], (cur) => ({ options: cur.options, value: [] }));
+  assert.equal(toggled.lines[3], '  value: []');
+  assert.equal(toggled.lines[2], block[2]);
+  const added = applyTags(block, ['c'], (cur) => ({ options: [...cur.options, 'Hex: cursed'], value: [...cur.value, 'Hex: cursed'] }));
+  assert.equal(added.lines[2], '  options: [Blinded, Poisoned, "Hex: cursed"]   # all');
+  assert.equal(added.lines[3], '  value: [Poisoned, "Hex: cursed"]');
+
+  const flow = ['d: { type: tags, options: [a, b], value: [b], label: Flags }'];
+  const r = applyTags(flow, ['d'], (cur) => ({ options: [...cur.options, 'c'], value: ['a', 'c'] }));
+  assert.equal(r.lines[0], 'd: { type: tags, options: [a, b, c], value: [a, c], label: Flags }');
+
+  const dashed = ['e:', '  type: tags', '  options:', '    - a', '  value: []'];
+  assert.equal(findListToken(dashed, ['e'], 'options'), null);
+  assert.equal(applyTags(dashed, ['e'], (cur) => cur), null);
+});
+
+test('reset and undo with tags', () => {
+  const lines = [
+    '```ttrpgsk-counters',
+    'hp: { value: 3, max: 9, reset: { on: long, to: max } }',
+    'c: { type: tags, options: [Poisoned, Prone], value: [Poisoned, Prone], reset: { on: long, to: none } }',
+    'd: { type: tags, options: [a], value: [], reset: { on: long, to: [a, z] } }',
+    '```',
+  ];
+  const { lines: out, changes } = applyReset(lines, 'long', t);
+  assert.equal(out[2], 'c: { type: tags, options: [Poisoned, Prone], value: [], reset: { on: long, to: none } }');
+  assert.equal(out[3], 'd: { type: tags, options: [a, z], value: [a, z], reset: { on: long, to: [a, z] } }');
+  assert.deepEqual(changes.map((c) => [c.label, c.kind || 'number']), [['hp', 'number'], ['c', 'tags'], ['d', 'tags']]);
+  assert.deepEqual(applyUndo(out, changes), lines);
+  const edited = out.slice();
+  edited[2] = edited[2].replace('value: []', 'value: [Prone]');
+  assert.equal(applyUndo(edited, changes), null);
+  assert.equal(applyReset(out, 'long', t).changes.length, 0);
 });

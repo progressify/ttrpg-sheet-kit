@@ -1,7 +1,7 @@
 // Minimal YAML reader for the tests: stands in for Obsidian's parseYaml.
 // Supports what counter blocks use: nested maps by indentation, flow maps
-// ({ a: 1, b: { c: x } }), numbers, true/false, null, quoted and plain strings,
-// and # comments. Not a general YAML parser.
+// ({ a: 1, b: { c: x } }), flow lists ([a, "b c"]), numbers, true/false, null, quoted and plain strings,
+// "- item" lists, and # comments. Not a general YAML parser.
 
 function scalar(raw) {
   const s = raw.trim();
@@ -64,6 +64,9 @@ function splitFlow(s) {
 
 function value(raw) {
   const s = raw.trim();
+  if (s.startsWith('[') && s.endsWith(']')) {
+    return splitFlow(s.slice(1, -1)).map(value);
+  }
   if (s.startsWith('{') && s.endsWith('}')) {
     const obj = {};
     for (const part of splitFlow(s.slice(1, -1))) {
@@ -87,14 +90,24 @@ function parseYaml(text) {
   for (const line of lines) {
     const indent = line.match(/^\s*/)[0].length;
     while (stack[stack.length - 1].indent >= indent) stack.pop();
-    const parent = stack[stack.length - 1].obj;
+    const top = stack[stack.length - 1];
+    // "- item" lines turn the map just opened by "key:" into a list.
+    if (/^\s*- /.test(line)) {
+      if (!Array.isArray(top.obj)) {
+        top.obj = [];
+        top.parent[top.key] = top.obj;
+      }
+      top.obj.push(value(line.replace(/^\s*- /, '')));
+      continue;
+    }
+    const parent = top.obj;
     const i = line.indexOf(':');
     if (i < 0) throw new Error(`yaml-lite: cannot read "${line}"`);
     const key = scalar(line.slice(0, i));
     const rest = line.slice(i + 1);
     if (rest.trim() === '') {
       parent[key] = {};
-      stack.push({ indent, obj: parent[key] });
+      stack.push({ indent, obj: parent[key], parent, key });
     } else {
       parent[key] = value(rest);
     }

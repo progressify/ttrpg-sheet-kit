@@ -33,7 +33,7 @@ key: <value>
 | `max` | integer | none | clicks clamp to it |
 | `min` | integer or `null` | 0 | **default 0: negative values need `min: null`** |
 | `step` | integer | 1 | Shift+click = step × 5 |
-| `type` | `number` \| `track` | `number` | `track` = row of `max` checkboxes, `value` = filled boxes; needs `max` |
+| `type` | `number` \| `track` \| `tags` | `number` | `track` = row of `max` checkboxes, `value` = filled boxes; needs `max`. `tags`: see Tags |
 | `mod` | boolean | false | shows D&D modifier `floor((v-10)/2)`, e.g. 14 → (+2) |
 | `reset` | `{ on: <moment>, to: max \| min \| <integer> }` | none | **both `on` and `to` required**; see Resets |
 
@@ -73,6 +73,22 @@ ammo:
 
 If a block contains at least one group, top-level counters outside groups are **ignored**. Don't mix.
 
+### Tags (conditions, on/off states)
+```yaml
+conditions:
+  label: Conditions
+  type: tags
+  options: [Blinded, Charmed, Frightened, Poisoned, Prone, Restrained]
+  value: [Poisoned]                 # active labels; [] = none
+  reset: { on: long, to: none }     # optional; to: none | [labels]
+```
+- Each label in `options` is a clickable chip; `value` holds the active ones. Users can add labels with ＋.
+- `options` and `value` **must be flow lists in brackets**, each on one line (never `- item` lines).
+- Quote labels containing `:` `,` `#` or brackets: `"Hex: cursed"`.
+- Ignores `min`, `max`, `step`, `mod`. In `reset`, `to` is `none` or a list, never `max`/`min`.
+- Official D&D 5e conditions: Blinded, Charmed, Deafened, Exhaustion, Frightened, Grappled, Incapacitated,
+  Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, Unconscious.
+
 ## 2. Columns callout
 
 ```
@@ -99,6 +115,7 @@ If a block contains at least one group, top-level counters outside groups are **
 8. Use counters only for values that change during play (HP, slots, coins, ammo, XP). Static numbers (AC, speed, skill bonuses) stay as plain text.
 9. YAML comments (`# ...`) are allowed and preserved.
 10. Never put a counter block inside a table or a list item.
+11. Use one `tags` counter for conditions/states instead of a track or counter per condition.
 
 ## 4. Recommended sheet structure
 
@@ -147,6 +164,14 @@ CHA: 10
 > action_surge: { label: Action Surge, type: track, max: 1, value: 0, reset: { on: short, to: min } }
 > death_fail: { label: Death save failures, type: track, max: 3, value: 0 }
 > ```
+
+```ttrpgsk-counters
+conditions:
+  label: Conditions
+  type: tags
+  options: [Blinded, Charmed, Frightened, Grappled, Poisoned, Prone, Restrained, Stunned]
+  value: []
+```
 
 ```ttrpgsk-counters
 coins:

@@ -31,6 +31,7 @@ It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own ho
 - **Type a value** directly: `25`, `+8` (healing), `-17` (damage).
 - **Resets** for rests, sessions or days: one command brings every counter back to its starting point.
 - **Undo** the last change, a whole reset included.
+- **Conditions** and other on/off labels (Poisoned, Prone, Concentrating…) you toggle with a click.
 - Changes only the number that changed: your formatting and YAML comments are kept.
 - Interface in English and Italian (follows Obsidian's language).
 
@@ -89,11 +90,40 @@ stress: { type: track, max: 3, value: 1 }
 | `max`   | maximum                                                  | none      |
 | `min`   | minimum (`null` = no minimum)                            | 0         |
 | `step`  | change per click (Shift+click = × 5)                     | 1         |
-| `type`  | `number`, or `track` for checkboxes (requires `max`)     | `number`  |
+| `type`  | `number`, `track` for checkboxes (requires `max`), or `tags` (see [Conditions](#conditions-tags)) | `number`  |
 | `mod`   | show the D&D modifier, e.g. 14 → (+2)                    | `false`   |
 | `reset` | `{ on: <moment>, to: max \| min \| <number> }`, see [Resets](#resets) | none |
 
 In a track, clicking a box fills the track up to that box; clicking the last filled box empties it.
+
+### Conditions (tags)
+
+A `tags` counter is a set of labels you switch on and off with a click: conditions, states,
+spell effects. `options` lists the labels, `value` the active ones.
+
+````markdown
+```ttrpgsk-counters
+conditions:
+  label: Conditions
+  type: tags
+  options: [Blinded, Charmed, Frightened, Poisoned, Prone, Restrained]
+  value: [Poisoned]
+  reset: { on: long, to: none }   # optional: clear them all with Reset…
+```
+````
+
+<p>
+  <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-05-conditions.png" alt="Conditions shown as labels, with Concentrating active and a + button" width="543">
+</p>
+
+- Click a label to turn it on (filled) or off.
+- Click **＋** to type a new label (e.g. *Hasted*): it is added to `options` and switched on.
+- `reset` works here too: `to: none` clears every label, `to: [Concentrating]` keeps only those listed.
+- Changes can be undone like any other.
+- Write `options` and `value` **in brackets** (`[a, b]`): lists written as `- item` lines are shown
+  but can't be clicked, and a warning explains why.
+
+The **D&D conditions** template (**Insert block…**) adds the 15 official conditions, in English or Italian.
 
 ### Typing a value
 
@@ -272,6 +302,13 @@ I'd love to hear how you use TTRPG Sheet Kit at your table.
   with a copy of the block that misbehaves and, if you can, a screenshot.
 - **Just want to share feedback** on the current features, good or bad? [Leave some feedback](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feedback.yml):
   every comment helps decide what to improve next.
+
+### Ideas under consideration
+
+Tell me in a [feature request](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feature_request.yml)
+if you'd use any of these:
+
+- **Descriptions for conditions**: hover a label to read its rule (e.g. *Poisoned: disadvantage on attack rolls and ability checks*).
 
 ## Development
 
