@@ -14,7 +14,7 @@ It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own ho
 **[Get it from Obsidian Community plugins](https://community.obsidian.md/plugins/ttrpg-sheet-kit)**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="A character sheet with counters, checkbox tracks and a spell list in columns" width="560">
+  <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-00-overview.png" alt="A character sheet with ability scores, a hit point bar, checkbox tracks, conditions and a spell list in columns" width="560">
 </p>
 
 *See the [before and after comparison](#before-and-after) below.*
@@ -23,6 +23,7 @@ It is system-agnostic: D&D, Fate, Pathfinder, Blades in the Dark, or your own ho
 
 - **Counters** with −/+ buttons, optional minimum and maximum, custom step (Shift+click = ×5).
 - **Checkbox tracks** for stress, spell slots, daily uses, inventory slots.
+- **Bars** for hit points, XP or reputation, that change colour as they run low.
 - **Vertical or horizontal layout**, with optional D&D ability modifiers (14 → +2).
 - **Groups**: several titled groups in one block.
 - **Columns callout** to put lists and text (even embedded notes) in two or three columns.
@@ -90,11 +91,35 @@ stress: { type: track, max: 3, value: 1 }
 | `max`   | maximum                                                  | none      |
 | `min`   | minimum (`null` = no minimum)                            | 0         |
 | `step`  | change per click (Shift+click = × 5)                     | 1         |
-| `type`  | `number`, `track` for checkboxes (requires `max`), or `tags` (see [Conditions](#conditions-tags)) | `number`  |
+| `type`  | `number`, `track` for checkboxes (requires `max`), `bar` (see [Bars](#bars-bar)) or `tags` (see [Conditions](#conditions-tags)) | `number`  |
 | `mod`   | show the D&D modifier, e.g. 14 → (+2)                    | `false`   |
 | `reset` | `{ on: <moment> \| [<moments>], to: max \| min \| <number> }`; moments are names you choose, see [Resets](#resets) | none |
 
 In a track, clicking a box fills the track up to that box; clicking the last filled box empties it.
+
+### Bars (bar)
+
+A `bar` counter shows its value as a coloured bar, with −/+ next to the label. It needs a `max`.
+
+````markdown
+```ttrpgsk-counters
+hp:
+  label: Hit points
+  type: bar
+  value: 24/30
+  colors: { 50%: yellow, 25%: red }   # optional: colour by threshold
+  reset: { on: long, to: max }
+xp: { label: Experience, type: bar, value: 300/900, step: 50, color: green }
+```
+````
+
+- Click the bar to type a value (`25`, `+8`, `-17`), like any counter. Resets and undo work as usual.
+- `color` is the base colour (default: the theme accent).
+- `colors` lists thresholds: the bar takes the colour of the **lowest threshold the value is at or below**.
+  Above, 15/30 HP is yellow and 7/30 is red. Thresholds are a percentage (`25%`) or a number (`10`).
+- Colours: `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink` (they follow your theme) or a code in quotes like `"#c33"` (without quotes, `#` starts a comment).
+
+The **Bars (HP, XP)** template (**Insert block…**) adds both examples.
 
 ### Conditions (tags)
 
@@ -274,7 +299,7 @@ Same character, same data, same theme and window width.
   </tr>
   <tr>
     <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plain-02-health.jpg" alt="Health and spellcasting in plain Markdown" width="100%"><br><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plain-03-inspiration-spellcasting.jpg" alt="Health and spellcasting in plain Markdown" width="100%"></td>
-    <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="Hit points, death saves, spell slots and spell list with the plugin" width="100%"></td>
+    <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="Hit point bar, death saves, conditions, spell slots and spell list with the plugin" width="100%"></td>
   </tr>
   <tr>
     <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plain-04-features-coins.jpg" alt="Features and coins in plain Markdown" width="100%"></td>

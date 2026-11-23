@@ -46,6 +46,11 @@ const STRINGS = {
       notList: 'options and value must be lists, e.g. value: [Poisoned]',
       notFlow: 'write options and value in brackets on one line, e.g. value: [Poisoned], to make them clickable',
     },
+    barErrors: {
+      color: (v) => `unknown colour "${v}": use red, orange, yellow, green, cyan, blue, purple, pink or a #hex code`,
+      threshold: (v) => `invalid threshold "${v}": use a percentage (25%) or a number`,
+      colors: 'colors must be a map, e.g. colors: { 50%: yellow, 25%: red }',
+    },
     undoCommand: 'Undo last change',
     undoButton: 'Undo',
     undone: (n) => `Undone: ${n === 1 ? '1 value' : `${n} values`} restored.`,
@@ -83,6 +88,24 @@ const STRINGS = {
         lines: [
           'stress: { label: Stress, type: track, max: 3, value: 0 }',
           'slot_1: { label: 1st level slots, type: track, max: 4, value: 0, reset: { on: long, to: min } }',
+        ],
+      },
+      bar: {
+        name: 'Bars (HP, XP)',
+        desc: 'Coloured bars that change colour as they run low',
+        lines: [
+          'hp:',
+          '  label: Hit points',
+          '  type: bar',
+          '  value: 24/30            # value/maximum: a bar needs a max',
+          '  colors: { 50%: yellow, 25%: red }   # at or below 50%: yellow, at or below 25%: red',
+          '  reset: { on: long, to: max }',
+          'xp:',
+          '  label: Experience',
+          '  type: bar',
+          '  value: 300/900',
+          '  step: 50                # Shift+click = 250',
+          '  color: green            # base colour (default: the theme accent)',
         ],
       },
       detailed: {
@@ -164,6 +187,11 @@ const STRINGS = {
       notList: 'options e value devono essere liste, es. value: [Avvelenato]',
       notFlow: 'scrivi options e value tra parentesi quadre su una riga, es. value: [Avvelenato], per renderle cliccabili',
     },
+    barErrors: {
+      color: (v) => `colore sconosciuto "${v}": usa red, orange, yellow, green, cyan, blue, purple, pink o un codice #esadecimale`,
+      threshold: (v) => `soglia non valida "${v}": usa una percentuale (25%) o un numero`,
+      colors: 'colors deve essere una mappa, es. colors: { 50%: yellow, 25%: red }',
+    },
     undoCommand: 'Annulla ultima modifica',
     undoButton: 'Annulla',
     undone: (n) => `Annullato: ${n === 1 ? '1 valore ripristinato' : `${n} valori ripristinati`}.`,
@@ -201,6 +229,24 @@ const STRINGS = {
         lines: [
           'stress: { label: Stress, type: track, max: 3, value: 0 }',
           'slot_1: { label: Slot 1° livello, type: track, max: 4, value: 0, reset: { on: long, to: min } }',
+        ],
+      },
+      bar: {
+        name: 'Barre (PF, PE)',
+        desc: 'Barre colorate che cambiano colore quando calano',
+        lines: [
+          'pf:',
+          '  label: Punti ferita',
+          '  type: bar',
+          '  value: 24/30            # valore/massimo: una barra richiede un max',
+          '  colors: { 50%: yellow, 25%: red }   # dal 50% in giù gialla, dal 25% in giù rossa',
+          '  reset: { on: long, to: max }',
+          'pe:',
+          '  label: Esperienza',
+          '  type: bar',
+          '  value: 300/900',
+          '  step: 50                # Shift+clic = 250',
+          '  color: green            # colore di base (predefinito: l\'accento del tema)',
         ],
       },
       detailed: {
@@ -262,7 +308,7 @@ function getStrings() {
 }
 
 // Command ids stay the same in every language, so hotkeys survive a language change.
-const TEMPLATE_IDS = ['vertical', 'horizontal', 'abilities', 'track', 'conditions', 'detailed', 'groups', 'columns'];
+const TEMPLATE_IDS = ['vertical', 'horizontal', 'abilities', 'track', 'bar', 'conditions', 'detailed', 'groups', 'columns'];
 
 function buildTemplates(t) {
   return TEMPLATE_IDS.map((id) => {
@@ -316,9 +362,10 @@ function normalizeItem(key, raw, groupMod) {
     item.max = raw.max !== undefined ? Number(raw.max) : parsed.max;
     if (raw.min !== undefined) item.min = raw.min === null ? null : Number(raw.min);
     if (raw.step !== undefined) item.step = Number(raw.step) || 1;
-    if (raw.type === 'track') item.type = 'track';
+    if (raw.type === 'track' || raw.type === 'bar') item.type = raw.type;
     if (raw.mod !== undefined) item.mod = !!raw.mod;
     if (raw.reset !== undefined) parseReset(item, raw.reset);
+    if (item.type === 'bar') parseBarColors(item, raw);
   } else {
     const parsed = parseValue(raw);
     if (!parsed) return null;
@@ -327,7 +374,61 @@ function normalizeItem(key, raw, groupMod) {
   }
 
   if (item.type === 'track' && !(item.max > 0)) item.type = 'number';
+  // A bar needs a max above its min to know how full it is.
+  if (item.type === 'bar' && !(item.max !== null && item.max > (item.min ?? 0))) item.type = 'number';
   return item;
+}
+
+// Colour names follow Obsidian's palette, so they suit light and dark themes.
+const BAR_COLORS = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'];
+
+// "red" → var(--color-red), "#c33" → "#c33", anything else → null.
+function parseColor(raw) {
+  const s = String(raw ?? '').trim().toLowerCase();
+  if (BAR_COLORS.includes(s)) return `var(--color-${s})`;
+  if (/^#([0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/.test(s)) return s;
+  return null;
+}
+
+// color: <base colour>, colors: { 50%: yellow, 25%: red } (thresholds in % or as numbers).
+// Sets item.color, item.thresholds and, for a bad entry, item.barError = { key, arg }.
+function parseBarColors(item, raw) {
+  item.color = null;
+  item.thresholds = [];
+  if (raw.color !== undefined && raw.color !== null) {
+    item.color = parseColor(raw.color);
+    if (!item.color) item.barError = { key: 'color', arg: String(raw.color) };
+  }
+  if (raw.colors === undefined || raw.colors === null) return;
+  if (!isPlainObject(raw.colors)) {
+    item.barError = { key: 'colors' };
+    return;
+  }
+  for (const [at, name] of Object.entries(raw.colors)) {
+    const m = String(at).trim().match(/^(-?\d+(?:\.\d+)?)\s*(%?)$/);
+    const color = parseColor(name);
+    if (!m) item.barError = { key: 'threshold', arg: String(at) };
+    else if (!color) item.barError = { key: 'color', arg: String(name) };
+    else item.thresholds.push({ at: Number(m[1]), percent: m[2] === '%', color });
+  }
+}
+
+// How full a bar is, 0–100.
+function barPercent(item) {
+  const min = item.min ?? 0;
+  return Math.min(100, Math.max(0, ((item.value - min) / (item.max - min)) * 100));
+}
+
+// The colour of the lowest threshold the value is at or below, else the base colour
+// (null = the theme accent).
+function barColor(item) {
+  const min = item.min ?? 0;
+  let best = null;
+  for (const th of item.thresholds || []) {
+    const at = th.percent ? min + ((item.max - min) * th.at) / 100 : th.at;
+    if (item.value <= at && (!best || at < best.at)) best = { at, color: th.color };
+  }
+  return best ? best.color : item.color;
 }
 
 // Tags (e.g. conditions): options: [..] are the labels, value: [..] the active ones.
@@ -1091,23 +1192,42 @@ class TtrpgSheetKitPlugin extends Plugin {
         });
         bindClick(box, () => change((cur) => (cur === i + 1 ? i : i + 1)));
       }
+    } else if (item.type === 'bar') {
+      // −/+ next to the label, the bar below with the value written on it.
+      const controls = row.createDiv({ cls: 'tsk-controls' });
+      this.renderStepButtons(controls, item, change);
+      const bar = row.createDiv({ cls: 'tsk-bar is-editable', attr: { 'aria-label': this.t.editHint } });
+      const color = barColor(item);
+      if (color) bar.style.setProperty('--tsk-bar-color', color);
+      bar.createDiv({ cls: 'tsk-bar-fill' }).style.width = `${barPercent(item)}%`;
+      bar.createSpan({ cls: 'tsk-bar-text', text: `${item.value} / ${item.max}` });
+      bindClick(bar, () => this.startEdit(bar, item, change));
     } else {
       const controls = row.createDiv({ cls: 'tsk-controls' });
-      const minus = controls.createEl('button', { cls: 'tsk-btn tsk-minus', text: '−', attr: { 'aria-label': this.t.decrease } });
-      const value = controls.createDiv({ cls: 'tsk-value is-editable', attr: { 'aria-label': this.t.editHint } });
-      value.createSpan({ cls: 'tsk-number', text: String(item.value) });
-      if (item.max !== null) value.createSpan({ cls: 'tsk-max', text: `/${item.max}` });
-      if (item.mod) value.createSpan({ cls: 'tsk-mod', text: `(${formatMod(item.value)})` });
-      const plus = controls.createEl('button', { cls: 'tsk-btn tsk-plus', text: '+', attr: { 'aria-label': this.t.increase } });
-
-      // Shift+click = step × 5
-      bindClick(minus, (e) => change((cur) => cur - item.step * (e.shiftKey ? 5 : 1)));
-      bindClick(plus, (e) => change((cur) => cur + item.step * (e.shiftKey ? 5 : 1)));
-      bindClick(value, () => this.startEdit(value, item, change));
+      this.renderStepButtons(controls, item, change, () => {
+        const value = controls.createDiv({ cls: 'tsk-value is-editable', attr: { 'aria-label': this.t.editHint } });
+        value.createSpan({ cls: 'tsk-number', text: String(item.value) });
+        if (item.max !== null) value.createSpan({ cls: 'tsk-max', text: `/${item.max}` });
+        if (item.mod) value.createSpan({ cls: 'tsk-mod', text: `(${formatMod(item.value)})` });
+        bindClick(value, () => this.startEdit(value, item, change));
+      });
     }
 
     if (item.tagsError) row.createDiv({ cls: 'tsk-warning', text: this.t.tagsErrors[item.tagsError] });
     if (item.resetError) row.createDiv({ cls: 'tsk-warning', text: this.t.resetErrors[item.resetError] });
+    if (item.barError) {
+      const msg = this.t.barErrors[item.barError.key];
+      row.createDiv({ cls: 'tsk-warning', text: typeof msg === 'function' ? msg(item.barError.arg) : msg });
+    }
+  }
+
+  // − [whatever renderMiddle adds] +, with Shift+click = step × 5.
+  renderStepButtons(controls, item, change, renderMiddle) {
+    const minus = controls.createEl('button', { cls: 'tsk-btn tsk-minus', text: '−', attr: { 'aria-label': this.t.decrease } });
+    if (renderMiddle) renderMiddle();
+    const plus = controls.createEl('button', { cls: 'tsk-btn tsk-plus', text: '+', attr: { 'aria-label': this.t.increase } });
+    bindClick(minus, (e) => change((cur) => cur - item.step * (e.shiftKey ? 5 : 1)));
+    bindClick(plus, (e) => change((cur) => cur + item.step * (e.shiftKey ? 5 : 1)));
   }
 
   // Replaces the ＋ tag with a text field: Enter adds and activates the label,
@@ -1251,6 +1371,9 @@ module.exports._internals = {
   formatList,
   parseInput,
   formatMod,
+  parseColor,
+  barPercent,
+  barColor,
   columnsCallout,
   buildTemplates,
   STRINGS,

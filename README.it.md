@@ -14,7 +14,7 @@ Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il t
 **[Scaricalo dai plugin della community di Obsidian](https://community.obsidian.md/plugins/ttrpg-sheet-kit)**
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="Una scheda con contatori, tracce di caselle ed elenco di incantesimi su colonne" width="560">
+  <img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-00-overview.png" alt="Una scheda con caratteristiche, barra dei punti ferita, tracce di caselle, condizioni ed elenco di incantesimi su colonne" width="560">
 </p>
 
 *Più sotto trovi il [confronto prima e dopo](#prima-e-dopo).*
@@ -23,6 +23,7 @@ Funziona con qualsiasi sistema: D&D, Fate, Pathfinder, Blades in the Dark o il t
 
 - **Contatori** con bottoni −/+, minimo e massimo facoltativi, passo personalizzato (Shift+clic = ×5).
 - **Tracce di caselle** per stress, slot incantesimo, usi giornalieri, slot dello zaino.
+- **Barre** per punti ferita, esperienza o reputazione, che cambiano colore quando calano.
 - **Layout verticale o orizzontale**, con modificatore D&D facoltativo (14 → +2).
 - **Gruppi**: più gruppi con titolo nello stesso blocco.
 - **Callout a colonne** per mettere elenchi e testo (anche note incorporate) su due o tre colonne.
@@ -89,11 +90,35 @@ stress: { type: track, max: 3, value: 1 }
 | `max`   | massimo                                                    | nessuno   |
 | `min`   | minimo (`null` = nessun minimo)                            | 0         |
 | `step`  | di quanto cambia a ogni clic (Shift+clic = × 5)            | 1         |
-| `type`  | `number`, `track` per le caselle (serve `max`) oppure `tags` (vedi [Condizioni](#condizioni-tags)) | `number`  |
+| `type`  | `number`, `track` per le caselle (serve `max`), `bar` (vedi [Barre](#barre-bar)) oppure `tags` (vedi [Condizioni](#condizioni-tags)) | `number`  |
 | `mod`   | mostra il modificatore D&D, es. 14 → (+2)                  | `false`   |
 | `reset` | `{ on: <momento> \| [<momenti>], to: max \| min \| <numero> }`; i momenti sono nomi scelti da te, vedi [Reset](#reset) | nessuno |
 
 In una traccia, cliccare una casella riempie la traccia fino a quella; cliccare l'ultima piena la svuota.
+
+### Barre (bar)
+
+Un contatore `bar` mostra il valore come una barra colorata, con −/+ accanto all'etichetta. Richiede un `max`.
+
+````markdown
+```ttrpgsk-counters
+pf:
+  label: Punti ferita
+  type: bar
+  value: 24/30
+  colors: { 50%: yellow, 25%: red }   # facoltativo: colore in base alla soglia
+  reset: { on: long, to: max }
+pe: { label: Esperienza, type: bar, value: 300/900, step: 50, color: green }
+```
+````
+
+- Clicca la barra per scrivere un valore (`25`, `+8`, `-17`), come per gli altri contatori. Reset e annulla funzionano come sempre.
+- `color` è il colore di base (predefinito: l'accento del tema).
+- `colors` elenca le soglie: la barra prende il colore della **soglia più bassa a cui il valore è pari o inferiore**.
+  Qui sopra, 15/30 PF è gialla e 7/30 è rossa. Le soglie sono una percentuale (`25%`) o un numero (`10`).
+- Colori: `red`, `orange`, `yellow`, `green`, `cyan`, `blue`, `purple`, `pink` (seguono il tema) oppure un codice tra virgolette come `"#c33"` (senza virgolette, `#` inizia un commento).
+
+Il modello **Barre (PF, PE)** (**Inserisci blocco…**) aggiunge entrambi gli esempi.
 
 ### Condizioni (tags)
 
@@ -274,7 +299,7 @@ Stesso personaggio, stessi dati, stesso tema e stessa larghezza della finestra.
   </tr>
   <tr>
     <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plain-02-health.jpg" alt="Salute e incantesimi in Markdown semplice" width="100%"><br><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plain-03-inspiration-spellcasting.jpg" alt="Salute e incantesimi in Markdown semplice" width="100%"></td>
-    <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="Punti ferita, tiri salvezza, slot e incantesimi con il plugin" width="100%"></td>
+    <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plugin-02-health-spellcasting.jpg" alt="Barra dei punti ferita, tiri salvezza, condizioni, slot e incantesimi con il plugin" width="100%"></td>
   </tr>
   <tr>
     <td valign="top"><img src="https://raw.githubusercontent.com/progressify/ttrpg-sheet-kit/main/assets/plain-04-features-coins.jpg" alt="Privilegi e monete in Markdown semplice" width="100%"></td>

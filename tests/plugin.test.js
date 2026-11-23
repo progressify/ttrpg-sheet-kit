@@ -36,6 +36,9 @@ const {
   formatList,
   parseInput,
   formatMod,
+  parseColor,
+  barPercent,
+  barColor,
   columnsCallout,
   buildTemplates,
   STRINGS,
@@ -381,4 +384,89 @@ test('reset and undo with tags', () => {
   edited[2] = edited[2].replace('value: []', 'value: [Prone]');
   assert.equal(applyUndo(edited, changes), null);
   assert.equal(applyReset(out, 'long', t).changes.length, 0);
+});
+
+// ---------------------------------------------------------------------------
+// Bars
+// ---------------------------------------------------------------------------
+
+test('parseBlock: bars need a max above min', () => {
+  const [g] = parseBlock(
+    [
+      'hp: { type: bar, value: 23/40 }',
+      'nomax: { type: bar, value: 5 }',
+      'flat: { type: bar, value: 3, min: 5, max: 5 }',
+    ].join('\n'),
+    t
+  );
+  assert.deepEqual(g.items.map((i) => i.type), ['bar', 'number', 'number']);
+  assert.equal(g.items[0].max, 40);
+});
+
+test('parseColor: palette names and hex codes', () => {
+  assert.equal(parseColor('red'), 'var(--color-red)');
+  assert.equal(parseColor(' Green '), 'var(--color-green)');
+  assert.equal(parseColor('#C33'), '#c33');
+  assert.equal(parseColor('#12345678'), '#12345678');
+  assert.equal(parseColor('crimson'), null);
+  assert.equal(parseColor('#12'), null);
+});
+
+test('bars: fill and threshold colours', () => {
+  const src = [
+    'hp:',
+    '  type: bar',
+    '  value: 10/40',
+    '  color: green',
+    '  colors: { 50%: yellow, 25%: red }',
+    'rep:',
+    '  type: bar',
+    '  value: 15/100',
+    '  min: -100',
+    '  colors: { 0: red }',
+  ].join('\n');
+  const [g] = parseBlock(src, t);
+  const [hp, rep] = g.items;
+  assert.equal(barPercent(hp), 25);
+  // At or below a threshold: the lowest one that applies wins.
+  assert.equal(barColor(hp), 'var(--color-red)');
+  assert.equal(barColor({ ...hp, value: 11 }), 'var(--color-yellow)');
+  assert.equal(barColor({ ...hp, value: 20 }), 'var(--color-yellow)');
+  assert.equal(barColor({ ...hp, value: 21 }), 'var(--color-green)');
+  // Fill is clamped to 0–100.
+  assert.equal(barPercent({ ...hp, value: 50 }), 100);
+  assert.equal(barPercent({ ...hp, value: -3 }), 0);
+  // Absolute thresholds and a negative min.
+  assert.ok(Math.abs(barPercent(rep) - 57.5) < 1e-9);
+  assert.equal(barColor(rep), null);
+  assert.equal(barColor({ ...rep, value: -20 }), 'var(--color-red)');
+});
+
+test('bars: bad colours and thresholds give a warning', () => {
+  const [g] = parseBlock(
+    [
+      'a: { type: bar, value: 1/2, color: crimson }',
+      'b: { type: bar, value: 1/2, colors: { half: red } }',
+      'c: { type: bar, value: 1/2, colors: { 50%: blu } }',
+      'd: { type: bar, value: 1/2, colors: red }',
+      'e: { type: bar, value: 1/2, colors: { 50%: red } }',
+    ].join('\n'),
+    t
+  );
+  assert.deepEqual(
+    g.items.map((i) => i.barError),
+    [{ key: 'color', arg: 'crimson' }, { key: 'threshold', arg: 'half' }, { key: 'color', arg: 'blu' }, { key: 'colors' }, undefined]
+  );
+});
+
+test('bars: the templates parse in both languages', () => {
+  for (const lang of [STRINGS.en, STRINGS.it]) {
+    const tpl = buildTemplates(lang).find((x) => x.id === 'insert-bar');
+    const body = tpl.text.split('\n').slice(1, -1).join('\n');
+    const [g] = parseBlock(body, lang);
+    assert.deepEqual(g.items.map((i) => i.type), ['bar', 'bar']);
+    assert.ok(g.items.every((i) => !i.barError));
+    assert.equal(barColor(g.items[0]), null);
+    assert.equal(barColor(g.items[1]), 'var(--color-green)');
+  }
 });

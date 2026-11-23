@@ -120,6 +120,79 @@
   border-radius: 999px;
 }
 
+/* Bars (HP, XP): the fill shows value between min and max, the text is on top.
+   The colour comes from --tsk-bar-color, set by the plugin from color/colors. */
+.tsk-bar {
+  --tsk-bar-color: var(--interactive-accent);
+  position: relative;
+  height: 1.5em;
+  border-radius: var(--radius-s);
+  background: var(--background-modifier-border);
+  overflow: hidden;
+  cursor: text;
+}
+
+.tsk-bar:hover {
+  box-shadow: 0 0 0 1px var(--interactive-accent);
+}
+
+.tsk-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  background: var(--tsk-bar-color);
+}
+
+.tsk-bar-text {
+  position: relative;
+  display: flex;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85em;
+  font-weight: var(--font-semibold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--text-normal);
+  /* Readable on both the fill and the empty part */
+  text-shadow: 0 0 3px var(--background-primary), 0 0 3px var(--background-primary);
+}
+
+.tsk-bar.is-editing {
+  overflow: visible;
+}
+
+.tsk-bar.is-editing > .tsk-bar-text {
+  visibility: hidden;
+}
+
+.tsk-counters .tsk-bar input.tsk-input {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Vertical: label and −/+ on one line, the bar below at full width */
+.tsk-layout-vertical .tsk-type-bar .tsk-bar {
+  flex-basis: 100%;
+  margin: 0.2em 0 0.15em;
+}
+
+/* Horizontal: label, bar, then −/+ */
+.tsk-layout-horizontal .tsk-type-bar .tsk-bar {
+  align-self: stretch;
+}
+
+.tsk-layout-horizontal .tsk-type-bar .tsk-controls {
+  order: 1;
+}
+
+.tsk-layout-horizontal .tsk-type-bar .tsk-warning {
+  order: 2;
+}
+
 /* ↺ next to the label of counters with a reset */
 .tsk-reset-icon {
   margin-left: 0.3em;

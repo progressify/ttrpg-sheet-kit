@@ -38,7 +38,9 @@ CHA: 8
 > label: Hit points
 > hp:
 >   label: Current
+>   type: bar           # a bar that turns yellow, then red, as she gets hurt
 >   value: 37
+>   colors: { 50%: yellow, 25%: red }
 >   max: 44             # can't heal past the maximum
 >   step: 1             # Shift+click = 5 at a time
 >   reset: { on: long, to: max }   # Reset… → long: back to full
