@@ -134,6 +134,9 @@ conditions:
   options: [Blinded, Charmed, Frightened, Poisoned, Prone, Restrained]
   value: [Poisoned]
   reset: { on: long, to: none }   # optional: clear them all with Reset…
+  descriptions:                   # optional: a short rule for each label
+    Poisoned: Disadvantage on attack rolls and ability checks.
+    Prone: Can only crawl; your attacks have disadvantage.
 ```
 ````
 
@@ -145,10 +148,13 @@ conditions:
 - Click **＋** to type a new label (e.g. *Hasted*): it is added to `options` and switched on.
 - `reset` works here too: `to: none` clears every label, `to: [Concentrating]` keeps only those listed.
 - Changes can be undone like any other.
+- `descriptions` (optional) gives a label a short text: **hover** it to read it, or on mobile **press and hold**
+  it to show the text below the labels (tap the text to hide it). Labels with a description are dotted-underlined.
+  Write one `Label: text` per line; quote labels that contain `:` (`"Hex: cursed": …`).
 - Write `options` and `value` **in brackets** (`[a, b]`): lists written as `- item` lines are shown
   but can't be clicked, and a warning explains why.
 
-The **D&D conditions** template (**Insert block…**) adds the 15 official conditions, in English or Italian.
+The **D&D conditions** template (**Insert block…**) adds the 15 official conditions with a short description of each, in English or Italian.
 
 ### Typing a value
 
@@ -333,13 +339,6 @@ I'd love to hear how you use TTRPG Sheet Kit at your table.
   with a copy of the block that misbehaves and, if you can, a screenshot.
 - **Just want to share feedback** on the current features, good or bad? [Leave some feedback](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feedback.yml):
   every comment helps decide what to improve next.
-
-### Ideas under consideration
-
-Tell me in a [feature request](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feature_request.yml)
-if you'd use any of these:
-
-- **Descriptions for conditions**: hover a label to read its rule (e.g. *Poisoned: disadvantage on attack rolls and ability checks*).
 
 ## Development
 

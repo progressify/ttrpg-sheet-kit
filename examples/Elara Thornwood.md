@@ -59,7 +59,7 @@ CHA: 8
 > inspiration: { label: Heroic inspiration, type: track, max: 1, value: 1 }
 > ```
 
-<!-- Conditions: click to toggle, ＋ to add your own. Cleared by a long rest. -->
+<!-- Conditions: click to toggle, ＋ to add your own, hover (or long-press on mobile) to read the rule. Cleared by a long rest. -->
 ```ttrpgsk-counters
 conditions:
   label: Conditions
@@ -67,6 +67,15 @@ conditions:
   options: [Blinded, Charmed, Frightened, Grappled, Poisoned, Prone, Restrained, Concentrating]
   value: [Concentrating]
   reset: { on: long, to: none }
+  descriptions:
+    Blinded: Can't see; attacks against you have advantage, yours have disadvantage.
+    Charmed: Can't attack the charmer; it has advantage on social checks with you.
+    Frightened: Disadvantage on checks and attacks while the source of fear is in sight.
+    Grappled: Speed 0.
+    Poisoned: Disadvantage on attack rolls and ability checks.
+    Prone: Can only crawl; your attacks have disadvantage.
+    Restrained: Speed 0; your attacks and Dex saves have disadvantage.
+    Concentrating: Taking damage forces a Con save (DC 10 or half the damage) to keep the spell.
 ```
 
 ## Spellcasting

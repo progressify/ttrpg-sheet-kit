@@ -46,6 +46,7 @@ const STRINGS = {
       notList: 'options and value must be lists, e.g. value: [Poisoned]',
       notFlow: 'write options and value in brackets on one line, e.g. value: [Poisoned], to make them clickable',
     },
+    descriptionsError: 'descriptions must be a map, one "Label: text" per line',
     barErrors: {
       color: (v) => `unknown colour "${v}": use red, orange, yellow, green, cyan, blue, purple, pink or a #hex code`,
       threshold: (v) => `invalid threshold "${v}": use a percentage (25%) or a number`,
@@ -142,7 +143,7 @@ const STRINGS = {
       },
       conditions: {
         name: 'D&D conditions',
-        desc: 'Clickable conditions (Poisoned, Prone…), ＋ adds your own',
+        desc: 'Clickable conditions (Poisoned, Prone…) with a short rule each, ＋ adds your own',
         lines: [
           'conditions:',
           '  label: Conditions',
@@ -150,6 +151,22 @@ const STRINGS = {
           '  options: [Blinded, Charmed, Deafened, Exhaustion, Frightened, Grappled, Incapacitated, Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, Unconscious]',
           '  value: []             # active ones, e.g. [Poisoned, Prone]',
           '  # reset: { on: long, to: none }   # clear them all with Reset…',
+          '  descriptions:         # hover a label, or long-press it on mobile',
+          '    Blinded: Can\'t see; fails checks that need sight. Attacks against you have advantage, yours have disadvantage.',
+          '    Charmed: Can\'t attack the charmer or target it with harmful effects; the charmer has advantage on social checks with you.',
+          '    Deafened: Can\'t hear; fails checks that need hearing.',
+          '    Exhaustion: Cumulative levels of penalties; a long rest removes one level.',
+          '    Frightened: Disadvantage on checks and attacks while the source of fear is in sight; can\'t move closer to it.',
+          '    Grappled: Speed 0. Ends if the grappler is incapacitated or you are moved out of its reach.',
+          '    Incapacitated: Can\'t take actions or reactions.',
+          '    Invisible: Can\'t be seen without magic. Your attacks have advantage, attacks against you have disadvantage.',
+          '    Paralyzed: Incapacitated, can\'t move or speak; fails Str and Dex saves. Attacks against you have advantage, hits within 5 ft are critical.',
+          '    Petrified: Turned to stone; incapacitated and unaware. Resistance to all damage, immune to poison and disease.',
+          '    Poisoned: Disadvantage on attack rolls and ability checks.',
+          '    Prone: Can only crawl; standing up costs half your speed. Your attacks have disadvantage; attacks within 5 ft have advantage, farther ones disadvantage.',
+          '    Restrained: Speed 0. Your attacks and Dex saves have disadvantage; attacks against you have advantage.',
+          '    Stunned: Incapacitated, can\'t move, speaks falteringly; fails Str and Dex saves. Attacks against you have advantage.',
+          '    Unconscious: Incapacitated and prone, drops what it holds, unaware; fails Str and Dex saves. Attacks have advantage, hits within 5 ft are critical.',
         ],
       },
       columns: {
@@ -187,6 +204,7 @@ const STRINGS = {
       notList: 'options e value devono essere liste, es. value: [Avvelenato]',
       notFlow: 'scrivi options e value tra parentesi quadre su una riga, es. value: [Avvelenato], per renderle cliccabili',
     },
+    descriptionsError: 'descriptions deve essere una mappa, una riga "Etichetta: testo" per ciascuna',
     barErrors: {
       color: (v) => `colore sconosciuto "${v}": usa red, orange, yellow, green, cyan, blue, purple, pink o un codice #esadecimale`,
       threshold: (v) => `soglia non valida "${v}": usa una percentuale (25%) o un numero`,
@@ -283,7 +301,7 @@ const STRINGS = {
       },
       conditions: {
         name: 'Condizioni D&D',
-        desc: 'Condizioni cliccabili (Avvelenato, Prono…), ＋ ne aggiunge altre',
+        desc: 'Condizioni cliccabili (Avvelenato, Prono…) con una breve regola ciascuna, ＋ ne aggiunge altre',
         lines: [
           'condizioni:',
           '  label: Condizioni',
@@ -291,6 +309,22 @@ const STRINGS = {
           '  options: [Accecato, Affascinato, Afferrato, Assordato, Avvelenato, Incapacitato, Indebolimento, Invisibile, Paralizzato, Pietrificato, Privo di sensi, Prono, Spaventato, Stordito, Trattenuto]',
           '  value: []             # quelle attive, es. [Avvelenato, Prono]',
           '  # reset: { on: long, to: none }   # le toglie tutte con Reset…',
+          '  descriptions:         # passa sopra un\'etichetta, o tienila premuta su mobile',
+          '    Accecato: Non vede; fallisce le prove che richiedono la vista. Gli attacchi contro di lui hanno vantaggio, i suoi svantaggio.',
+          '    Affascinato: Non può attaccare chi lo ha affascinato né colpirlo con effetti dannosi; quest\'ultimo ha vantaggio nelle prove sociali con lui.',
+          '    Afferrato: Velocità 0. Termina se chi lo afferra è incapacitato o se viene portato fuori dalla sua portata.',
+          '    Assordato: Non sente; fallisce le prove che richiedono l\'udito.',
+          '    Avvelenato: Svantaggio ai tiri per colpire e alle prove di caratteristica.',
+          '    Incapacitato: Non può compiere azioni né reazioni.',
+          '    Indebolimento: Livelli di penalità cumulativi; un riposo lungo ne toglie uno.',
+          '    Invisibile: Non può essere visto senza magia. I suoi attacchi hanno vantaggio, quelli contro di lui svantaggio.',
+          '    Paralizzato: Incapacitato, non può muoversi né parlare; fallisce i TS di Forza e Destrezza. Gli attacchi contro di lui hanno vantaggio, i colpi entro 1,5 m sono critici.',
+          '    Pietrificato: Trasformato in pietra; incapacitato e ignaro di ciò che lo circonda. Resistenza a tutti i danni, immune a veleno e malattie.',
+          '    Privo di sensi: Incapacitato e prono, lascia cadere ciò che tiene, ignaro; fallisce i TS di Forza e Destrezza. Gli attacchi hanno vantaggio, i colpi entro 1,5 m sono critici.',
+          '    Prono: Può solo strisciare; rialzarsi costa metà velocità. I suoi attacchi hanno svantaggio; contro di lui, vantaggio entro 1,5 m e svantaggio oltre.',
+          '    Spaventato: Svantaggio a prove e attacchi finché vede la fonte della paura; non può avvicinarsi a essa.',
+          '    Stordito: Incapacitato, non può muoversi, parla a fatica; fallisce i TS di Forza e Destrezza. Gli attacchi contro di lui hanno vantaggio.',
+          '    Trattenuto: Velocità 0. I suoi attacchi e i TS di Destrezza hanno svantaggio; gli attacchi contro di lui hanno vantaggio.',
         ],
       },
       columns: {
@@ -442,6 +476,16 @@ function normalizeTags(item, raw) {
   item.value = [...new Set(strings(raw.value))];
   // Active labels missing from options are still shown.
   item.options = [...new Set([...strings(raw.options), ...item.value])];
+  // descriptions: { Label: short text } shown on hover or long-press.
+  item.descriptions = {};
+  if (isPlainObject(raw.descriptions)) {
+    for (const [name, text] of Object.entries(raw.descriptions)) {
+      // Only plain text: empty entries (null) and nested maps are skipped.
+      if ((typeof text === 'string' || typeof text === 'number') && String(text).trim()) item.descriptions[String(name).trim()] = String(text).trim();
+    }
+  } else if (raw.descriptions !== undefined && raw.descriptions !== null) {
+    item.descriptionsError = true;
+  }
   if (raw.reset !== undefined) parseReset(item, raw.reset);
   return item;
 }
@@ -1170,6 +1214,13 @@ class TtrpgSheetKitPlugin extends Plugin {
       for (const name of item.options) {
         const active = item.value.includes(name);
         const tag = tags.createEl('button', { cls: 'tsk-tag' + (active ? ' is-active' : ''), text: name, attr: { 'aria-pressed': String(active) } });
+        const desc = item.descriptions[name];
+        if (desc) {
+          // Hover shows the tooltip; long-press (needed on mobile) shows it below the labels.
+          tag.addClass('has-desc');
+          tag.setAttribute('aria-label', `${name}: ${desc}`);
+          bindLongPress(tag, () => this.showTagDescription(row, name, desc));
+        }
         if (!editable) tag.disabled = true;
         else
           bindClick(tag, () =>
@@ -1214,6 +1265,7 @@ class TtrpgSheetKitPlugin extends Plugin {
     }
 
     if (item.tagsError) row.createDiv({ cls: 'tsk-warning', text: this.t.tagsErrors[item.tagsError] });
+    if (item.descriptionsError) row.createDiv({ cls: 'tsk-warning', text: this.t.descriptionsError });
     if (item.resetError) row.createDiv({ cls: 'tsk-warning', text: this.t.resetErrors[item.resetError] });
     if (item.barError) {
       const msg = this.t.barErrors[item.barError.key];
@@ -1228,6 +1280,20 @@ class TtrpgSheetKitPlugin extends Plugin {
     const plus = controls.createEl('button', { cls: 'tsk-btn tsk-plus', text: '+', attr: { 'aria-label': this.t.increase } });
     bindClick(minus, (e) => change((cur) => cur - item.step * (e.shiftKey ? 5 : 1)));
     bindClick(plus, (e) => change((cur) => cur + item.step * (e.shiftKey ? 5 : 1)));
+  }
+
+  // Shows a tag's description under the labels (one at a time per counter);
+  // long-pressing the same tag again, or tapping the text, hides it.
+  showTagDescription(row, name, desc) {
+    const old = row.querySelector('.tsk-tag-desc');
+    const same = old && old.dataset.tag === name;
+    if (old) old.remove();
+    if (same) return;
+    const box = createDiv({ cls: 'tsk-tag-desc', attr: { role: 'note', 'data-tag': name } });
+    box.createEl('strong', { text: name });
+    box.appendText(` ${desc}`);
+    row.querySelector('.tsk-tags').insertAdjacentElement('afterend', box);
+    bindClick(box, () => box.remove());
   }
 
   // Replaces the ＋ tag with a text field: Enter adds and activates the label,
@@ -1340,6 +1406,48 @@ class TtrpgSheetKitPlugin extends Plugin {
 
 // Keeps a click in Live Preview from moving the cursor into the block
 // (which would reveal the source) instead of pressing the button.
+// Calls handler after the pointer is held still on el for `ms`, and swallows
+// the click that follows, so a long-press doesn't also toggle the tag.
+// Register it before bindClick: capture listeners on the target run first.
+function bindLongPress(el, handler, ms = 500) {
+  let timer = null;
+  let fired = false;
+  let start = null;
+  const cancel = () => {
+    if (timer) window.clearTimeout(timer);
+    timer = null;
+  };
+  el.addEventListener('pointerdown', (e) => {
+    if (e.button !== 0) return;
+    fired = false;
+    start = [e.clientX, e.clientY];
+    cancel();
+    timer = window.setTimeout(() => {
+      timer = null;
+      fired = true;
+      handler();
+    }, ms);
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (timer && Math.hypot(e.clientX - start[0], e.clientY - start[1]) > 10) cancel();
+  });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, cancel);
+  // No system menu or text selection on mobile long-press.
+  el.addEventListener('contextmenu', (e) => {
+    if (fired || timer) e.preventDefault();
+  });
+  el.addEventListener(
+    'click',
+    (e) => {
+      if (!fired) return;
+      fired = false;
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    },
+    true
+  );
+}
+
 function bindClick(btn, handler) {
   btn.addEventListener('mousedown', (e) => {
     e.preventDefault();

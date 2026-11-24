@@ -133,6 +133,9 @@ condizioni:
   options: [Accecato, Affascinato, Spaventato, Avvelenato, Prono, Trattenuto]
   value: [Avvelenato]
   reset: { on: long, to: none }   # facoltativo: le toglie tutte con Reset…
+  descriptions:                   # facoltativo: una breve regola per etichetta
+    Avvelenato: Svantaggio ai tiri per colpire e alle prove di caratteristica.
+    Prono: Può solo strisciare; i suoi attacchi hanno svantaggio.
 ```
 ````
 
@@ -144,10 +147,14 @@ condizioni:
 - Clicca **＋** per scrivere una nuova etichetta (es. *Velocizzato*): viene aggiunta a `options` e accesa.
 - Anche qui funziona `reset`: `to: none` le spegne tutte, `to: [Concentrazione]` lascia accese solo quelle indicate.
 - Le modifiche si possono annullare come le altre.
+- `descriptions` (facoltativo) dà a un'etichetta un breve testo: **passaci sopra** per leggerlo, oppure su mobile
+  **tienila premuta** per mostrarlo sotto le etichette (tocca il testo per nasconderlo). Le etichette con una
+  descrizione sono sottolineate a puntini. Scrivi una riga `Etichetta: testo` per ciascuna; metti tra virgolette
+  le etichette che contengono `:` (`"Maledizione: Hex": …`).
 - Scrivi `options` e `value` **tra parentesi quadre** (`[a, b]`): le liste scritte a righe con `- voce`
   vengono mostrate ma non sono cliccabili, e un avviso spiega perché.
 
-Il modello **Condizioni D&D** (**Inserisci blocco…**) aggiunge le 15 condizioni ufficiali, in italiano o in inglese.
+Il modello **Condizioni D&D** (**Inserisci blocco…**) aggiunge le 15 condizioni ufficiali con una breve descrizione di ciascuna, in italiano o in inglese.
 
 ### Scrivere un valore
 
@@ -333,13 +340,6 @@ Mi farebbe piacere sapere come usi TTRPG Sheet Kit al tuo tavolo.
   con una copia del blocco che non funziona e, se puoi, uno screenshot.
 - **Vuoi solo dire cosa ne pensi** delle funzionalità attuali, nel bene o nel male? [Lascia un feedback](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feedback.yml):
   ogni commento aiuta a decidere cosa migliorare. Puoi scrivere anche in italiano.
-
-### Idee in valutazione
-
-Dimmi in una [richiesta](https://github.com/progressify/ttrpg-sheet-kit/issues/new?template=feature_request.yml)
-se useresti qualcuna di queste:
-
-- **Descrizioni delle condizioni**: passando sopra un'etichetta se ne legge la regola (es. *Avvelenato: svantaggio ai tiri per colpire e alle prove di caratteristica*).
 
 ## Sviluppo
 

@@ -100,10 +100,14 @@ conditions:
   options: [Blinded, Charmed, Frightened, Poisoned, Prone, Restrained]
   value: [Poisoned]                 # active labels; [] = none
   reset: { on: long, to: none }     # optional; to: none | [labels]
+  descriptions:                     # optional; label -> short text
+    Poisoned: Disadvantage on attack rolls and ability checks.
 ```
 - Each label in `options` is a clickable chip; `value` holds the active ones. Users can add labels with ＋.
 - `options` and `value` **must be flow lists in brackets**, each on one line (never `- item` lines).
 - Quote labels containing `:` `,` `#` or brackets: `"Hex: cursed"`.
+- `descriptions`: optional map, one `Label: text` per line (block or flow map). Shown as a tooltip on hover and
+  below the labels on long-press (mobile). Labels without one work as usual. Avoid `: ` and ` #` inside the text, or quote it.
 - Ignores `min`, `max`, `step`, `mod`. In `reset`, `to` is `none` or a list, never `max`/`min`.
 - Official D&D 5e conditions: Blinded, Charmed, Deafened, Exhaustion, Frightened, Grappled, Incapacitated,
   Invisible, Paralyzed, Petrified, Poisoned, Prone, Restrained, Stunned, Unconscious.

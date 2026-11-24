@@ -470,3 +470,48 @@ test('bars: the templates parse in both languages', () => {
     assert.equal(barColor(g.items[1]), 'var(--color-green)');
   }
 });
+
+// ---------------------------------------------------------------------------
+// Tag descriptions
+// ---------------------------------------------------------------------------
+
+test('tags: descriptions map', () => {
+  const src = [
+    'c:',
+    '  type: tags',
+    '  options: [Poisoned, Prone, Hasted]',
+    '  value: [Poisoned]',
+    '  descriptions:',
+    '    Poisoned: Disadvantage on attack rolls, ability checks.',
+    '    Hasted: +2 AC',
+    '    Prone:',
+    'd: { type: tags, options: [a], value: [], descriptions: oops }',
+    'e: { type: tags, options: [a], value: [] }',
+  ].join('\n');
+  const items = Object.fromEntries(parseBlock(src, t)[0].items.map((i) => [i.key, i]));
+  assert.deepEqual(items.c.descriptions, {
+    Poisoned: 'Disadvantage on attack rolls, ability checks.',
+    Hasted: '+2 AC',
+  });
+  assert.ok(!items.c.descriptionsError);
+  assert.equal(items.d.descriptionsError, true);
+  assert.ok(!items.d.tagsError, 'a bad descriptions map keeps the tags clickable');
+  assert.deepEqual(items.e.descriptions, {});
+  assert.ok(STRINGS.it.descriptionsError);
+});
+
+test('tags: toggling leaves the descriptions untouched', () => {
+  const block = ['c:', '  type: tags', '  options: [Poisoned]', '  value: []', '  descriptions:', '    Poisoned: Disadvantage.'];
+  const r = applyTags(block, ['c'], (cur) => ({ options: [...cur.options, 'Prone'], value: ['Prone'] }));
+  assert.deepEqual(r.lines, ['c:', '  type: tags', '  options: [Poisoned, Prone]', '  value: [Prone]', '  descriptions:', '    Poisoned: Disadvantage.']);
+});
+
+test('tags: the conditions templates describe every condition', () => {
+  for (const lang of [STRINGS.en, STRINGS.it]) {
+    const tpl = buildTemplates(lang).find((x) => x.id === 'insert-conditions');
+    const body = tpl.text.split('\n').slice(1, -1).join('\n');
+    const [item] = parseBlock(body, lang)[0].items;
+    assert.equal(item.options.length, 15);
+    assert.deepEqual(Object.keys(item.descriptions).sort(), [...item.options].sort());
+  }
+});
