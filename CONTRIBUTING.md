@@ -14,8 +14,8 @@ version, theme, view mode (Live Preview or Reading view) and platform.
 
 | Path | What it is |
 |---|---|
-| `src/main.js` | the whole plugin: parsing, rendering, editing, commands, translations |
-| `scripts/build.mjs` | checks `src/main.js` and copies it to `main.js` |
+| `src/plugin.js` | the whole plugin: parsing, rendering, editing, commands, translations |
+| `scripts/build.mjs` | checks `src/plugin.js` and copies it to `main.js` |
 | `styles.css` | counter layouts and the `ttrpgsk-columns` callout |
 | `manifest.json` | plugin metadata read by Obsidian |
 | `tests/` | unit tests (`node:test`, no dependencies) |
@@ -23,11 +23,13 @@ version, theme, view mode (Live Preview or Reading view) and platform.
 | `llms.txt` | syntax reference for AI assistants |
 
 The plugin is plain JavaScript with no runtime dependencies. `npm run build` checks
-`src/main.js` and copies it unchanged to `main.js`, the file Obsidian loads. `main.js` is
+`src/plugin.js` and copies it unchanged to `main.js`, the file Obsidian loads (the source is
+not named `main.js` because Obsidian's build check deletes every `main.js` before building). `main.js` is
 not committed: it is built locally and attached to each release. The dev dependencies are
 only for linting: ESLint with [`eslint-plugin-obsidianmd`](https://github.com/obsidianmd/eslint-plugin)
-(the rules Obsidian's plugin review runs), plus `obsidian` and `typescript`, which give its
-type-aware rules the Obsidian API types (`jsconfig.json`).
+(the rules Obsidian's plugin review runs) and `typescript`, which the plugin needs.
+Do not add a `jsconfig.json` or `tsconfig.json`: the review would then lint the JavaScript
+with type information and report "unsafe `any`" on almost every line.
 
 ## Development
 
@@ -41,7 +43,7 @@ type-aware rules the Obsidian API types (`jsconfig.json`).
    ```
 
 3. Enable the plugin in Settings → Community plugins.
-4. After a change in `src/main.js`, run `npm run build` again, then disable and re-enable
+4. After a change in `src/plugin.js`, run `npm run build` again, then disable and re-enable
    the plugin (or use the [Hot Reload](https://github.com/pjeby/hot-reload) plugin).
 5. Run the tests and the linter:
 
@@ -57,7 +59,7 @@ Check your change in both **Live Preview** and **Reading view**, and on a narrow
 - Keep each pull request focused on one change.
 - Add or update tests in `tests/` for parsing or editing changes.
 - When you change the block syntax, update `README.md`, `README.it.md` and `llms.txt` too.
-- New user-facing text goes in `STRINGS` in `src/main.js`, in both English and Italian.
+- New user-facing text goes in `STRINGS` in `src/plugin.js`, in both English and Italian.
 - CSS: prefix classes with `tsk-`, use Obsidian's CSS variables, avoid `!important`
   unless overriding an inline style.
 

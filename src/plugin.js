@@ -703,7 +703,7 @@ function findListToken(lines, path, key) {
     let list;
     try {
       list = parseYaml(`v: ${text.slice(open, close + 1)}`).v;
-    } catch (e) {
+    } catch {
       return null;
     }
     if (!Array.isArray(list)) return null;
@@ -822,7 +822,7 @@ function collectResets(lines, t) {
     let groups;
     try {
       groups = parseBlock(blockBody(lines, block).join('\n'), t);
-    } catch (e) {
+    } catch {
       continue;
     }
     for (const group of groups) {

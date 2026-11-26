@@ -342,7 +342,7 @@ I'd love to hear how you use TTRPG Sheet Kit at your table.
 
 ## Development
 
-The plugin is plain JavaScript: the source is `src/main.js`, and `npm run build` copies it to `main.js`. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and pull requests.
+The plugin is plain JavaScript: the source is `src/plugin.js`, and `npm run build` copies it to `main.js`. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, conventions and pull requests.
 
 ```bash
 npm install

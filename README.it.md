@@ -343,7 +343,7 @@ Mi farebbe piacere sapere come usi TTRPG Sheet Kit al tuo tavolo.
 
 ## Sviluppo
 
-Il plugin è JavaScript semplice: il sorgente è `src/main.js` e `npm run build` lo copia in `main.js`. Vedi [CONTRIBUTING.md](CONTRIBUTING.md) (in inglese) per configurazione, convenzioni e pull request.
+Il plugin è JavaScript semplice: il sorgente è `src/plugin.js` e `npm run build` lo copia in `main.js`. Vedi [CONTRIBUTING.md](CONTRIBUTING.md) (in inglese) per configurazione, convenzioni e pull request.
 
 ```bash
 npm install
