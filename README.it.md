@@ -343,15 +343,18 @@ Mi farebbe piacere sapere come usi TTRPG Sheet Kit al tuo tavolo.
 
 ## Sviluppo
 
-Il plugin è JavaScript semplice, senza passaggio di build. Vedi [CONTRIBUTING.md](CONTRIBUTING.md) (in inglese) per configurazione, convenzioni e pull request.
+Il plugin è JavaScript semplice: il sorgente è `src/main.js` e `npm run build` lo copia in `main.js`. Vedi [CONTRIBUTING.md](CONTRIBUTING.md) (in inglese) per configurazione, convenzioni e pull request.
 
 ```bash
+npm install
+npm run build
 npm test
+npm run lint
 ```
 
 Per pubblicare una versione: aggiorna `version` in `manifest.json`, `package.json` e `versions.json`,
 poi fai il push di un tag con la stessa versione (es. `0.2.0`, senza `v`). Il workflow di GitHub
-esegue i test e crea una release in bozza con `main.js`, `manifest.json` e `styles.css`.
+esegue i test e il linter, genera `main.js` e crea una release in bozza con `main.js`, `manifest.json` e `styles.css`.
 
 ## Licenza
 

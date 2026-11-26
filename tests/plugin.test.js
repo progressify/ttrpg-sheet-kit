@@ -42,7 +42,7 @@ const {
   columnsCallout,
   buildTemplates,
   STRINGS,
-} = require(path.join(__dirname, '..', 'main.js'))._internals;
+} = require(path.join(__dirname, '..', 'src', 'main.js'))._internals;
 
 const t = STRINGS.en;
 const update = (src, p, fn) => {
